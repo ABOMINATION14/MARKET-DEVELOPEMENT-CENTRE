@@ -1,33 +1,384 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>Shopping Cart</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>FreshMart | Online Grocery Store</title>
+
+<link rel="stylesheet" href="style.css">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
 </head>
 
 <body>
 
-    <div class="container">
+<!-- ================= NAVBAR ================= -->
 
-        <h1>Shopping Cart</h1>
+<nav>
 
-        <input type="text" id="product" placeholder="Enter Product">
+<div class="logo">
+<i class="fa-solid fa-cart-shopping"></i>
+FreshMart
+</div>
 
-        <button onclick="searchProduct()">Search Product</button>
+<ul>
 
-        <button onclick="addProduct()">Add To Cart</button>
+<li><a href="index.html">Home</a></li>
+<li><a href="products.html">Products</a></li>
+<li><a href="cart.html">Cart</a></li>
+<li><a href="login.html">Login</a></li>
 
-        <button onclick="viewCart()">View Cart</button>
+</ul>
 
-        <button onclick="placeOrder()">Place Order</button>
+<div class="icons">
 
-        <div id="output"></div>
+<i class="fa-solid fa-heart"></i>
 
-    </div>
+<a href="cart.html">
+<i class="fa-solid fa-cart-shopping"></i>
+<span id="cartCount">0</span>
+</a>
 
-<script src="script.js"></script>
+</div>
+
+</nav>
+
+<!-- ================= HERO ================= -->
+
+<section class="hero">
+
+<div class="hero-text">
+
+<h1>Fresh Groceries Delivered To Your Door</h1>
+
+<p>
+
+Buy Fresh Fruits, Vegetables, Dairy Products,
+Snacks and Drinks at affordable prices.
+
+</p>
+
+<a href="products.html">
+
+<button>
+
+Shop Now
+
+</button>
+
+</a>
+
+</div>
+
+<div class="hero-image">
+
+<img src="images/banner.png">
+
+</div>
+
+</section>
+
+<!-- ================= SEARCH ================= -->
+
+<section class="search">
+
+<h2>Search Products</h2>
+
+<input
+type="text"
+placeholder="Search products..."
+id="searchBox"
+onkeyup="searchProduct()">
+
+</section>
+
+<!-- ================= CATEGORIES ================= -->
+
+<section class="categories">
+
+<h2>Categories</h2>
+
+<div class="category-box">
+
+<div class="category">
+
+<img src="images/vegetables.png">
+
+<h3>Vegetables</h3>
+
+</div>
+
+<div class="category">
+
+<img src="images/fruits.png">
+
+<h3>Fruits</h3>
+
+</div>
+
+<div class="category">
+
+<img src="images/dairy.png">
+
+<h3>Dairy</h3>
+
+</div>
+
+<div class="category">
+
+<img src="images/snacks.png">
+
+<h3>Snacks</h3>
+
+</div>
+
+<div class="category">
+
+<img src="images/drinks.png">
+
+<h3>Drinks</h3>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ================= FEATURED PRODUCTS ================= -->
+
+<section class="products">
+
+<h2>Featured Products</h2>
+
+<div class="product-grid">
+
+<div class="card">
+
+<img src="images/tomato.png">
+
+<h3>Tomato</h3>
+
+<p>$2.00 / kg</p>
+
+<p class="rating">
+
+⭐⭐⭐⭐⭐
+
+</p>
+
+<button onclick="addCart('Tomato',2)">
+
+Add To Cart
+
+</button>
+
+</div>
+
+<div class="card">
+
+<img src="images/potato.png">
+
+<h3>Potato</h3>
+
+<p>$1.50 / kg</p>
+
+<p class="rating">
+
+⭐⭐⭐⭐⭐
+
+</p>
+
+<button onclick="addCart('Potato',1.5)">
+
+Add To Cart
+
+</button>
+
+</div>
+
+<div class="card">
+
+<img src="images/carrot.png">
+
+<h3>Carrot</h3>
+
+<p>$3.00 / kg</p>
+
+<p class="rating">
+
+⭐⭐⭐⭐☆
+
+</p>
+
+<button onclick="addCart('Carrot',3)">
+
+Add To Cart
+
+</button>
+
+</div>
+
+<div class="card">
+
+<img src="images/onion.png">
+
+<h3>Onion</h3>
+
+<p>$2.20 / kg</p>
+
+<p class="rating">
+
+⭐⭐⭐⭐⭐
+
+</p>
+
+<button onclick="addCart('Onion',2.2)">
+
+Add To Cart
+
+</button>
+
+</div>
+
+<div class="card">
+
+<img src="images/apple.png">
+
+<h3>Apple</h3>
+
+<p>$5.00 / kg</p>
+
+<p class="rating">
+
+⭐⭐⭐⭐⭐
+
+</p>
+
+<button onclick="addCart('Apple',5)">
+
+Add To Cart
+
+</button>
+
+</div>
+
+<div class="card">
+
+<img src="images/banana.png">
+
+<h3>Banana</h3>
+
+<p>$2.50 / dozen</p>
+
+<p class="rating">
+
+⭐⭐⭐⭐☆
+
+</p>
+
+<button onclick="addCart('Banana',2.5)">
+
+Add To Cart
+
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ================= OFFERS ================= -->
+
+<section class="offer">
+
+<h2>Today's Special Offer</h2>
+
+<h1>20% OFF</h1>
+
+<p>
+
+On all Fresh Vegetables
+
+</p>
+
+<button>
+
+Grab Offer
+
+</button>
+
+</section>
+
+<!-- ================= WHY CHOOSE US ================= -->
+
+<section class="why">
+
+<h2>Why Choose FreshMart?</h2>
+
+<div class="why-box">
+
+<div>
+
+<i class="fa-solid fa-truck-fast"></i>
+
+<h3>Fast Delivery</h3>
+
+<p>Delivered within 30 Minutes.</p>
+
+</div>
+
+<div>
+
+<i class="fa-solid fa-leaf"></i>
+
+<h3>Fresh Products</h3>
+
+<p>Directly from Farms.</p>
+
+</div>
+
+<div>
+
+<i class="fa-solid fa-wallet"></i>
+
+<h3>Affordable Price</h3>
+
+<p>Lowest Price Guaranteed.</p>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer>
+
+<h2>FreshMart</h2>
+
+<p>
+
+Fresh Grocery Shopping Website
+
+</p>
+
+<p>
+
+© 2026 FreshMart. All Rights Reserved.
+
+</p>
+
+</footer>
+
+<script src="app.js"></script>
 
 </body>
-
 </html>

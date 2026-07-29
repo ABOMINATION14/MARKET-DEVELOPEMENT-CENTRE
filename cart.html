@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FreshMart - Cart</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/cart.css">
+
+</head>
+
+
+<body>
+
+
+<!-- Navigation Bar -->
+
+<header>
+
+    <div class="logo">
+        🛒 FreshMart
+    </div>
+
+
+    <nav>
+
+        <a href="index.html">Home</a>
+
+        <a href="products.html">Products</a>
+
+        <a href="cart.html">Cart 🛍️</a>
+
+        <a href="profile.html">Profile</a>
+
+    </nav>
+
+</header>
+
+
+
+
+<!-- Cart Heading -->
+
+<section class="cart-header">
+
+    <h1>Your Shopping Cart</h1>
+
+    <p>Review your items before checkout</p>
+
+</section>
+
+
+
+
+
+<!-- Cart Items -->
+
+<section class="cart-container">
+
+
+    <div id="cartItems">
+
+
+        <!-- Products will appear here using JavaScript -->
+
+
+    </div>
+
+
+
+
+    <div class="cart-summary">
+
+
+        <h2>Order Summary</h2>
+
+
+        <p>
+            Total Items:
+            <span id="totalItems">0</span>
+        </p>
+
+
+
+        <p>
+            Total Amount:
+            $<span id="totalPrice">0</span>
+        </p>
+
+
+
+
+        <button onclick="checkout()">
+
+            Proceed To Checkout
+
+        </button>
+
+
+    </div>
+
+
+
+</section>
+
+
+
+
+
+<script src="js/cart.js"></script>
+
+
+</body>
+
+</html>

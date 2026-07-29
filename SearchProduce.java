@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class c1{
+public class SearchProduce {
     public static void main(String[] args) {
         ArrayList<String> products = new ArrayList<>();
         products.add("Tomato");
@@ -8,6 +8,7 @@ public class c1{
         products.add("Carrot");
         products.add("Onion");
         products.add("Brinjal");
+        products.add(e:"ladiesfinger");
 
         Scanner sc = new Scanner(System.in);
 
