@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class SearchProduce {
+public class c1{
     public static void main(String[] args) {
         ArrayList<String> products = new ArrayList<>();
         products.add("Tomato");
