@@ -12,7 +12,9 @@ public class c2 {
             System.out.println("2.Remove Product");
             System.out.println("3.View Cart");
             System.out.println("4.Place Order");
+            System.out.println(x:"confirm order");
             System.out.println("5.Exit");
+            System.out.println(x:"")
 
             System.out.print("Enter Choice: ");
             int choice = sc.nextInt();
