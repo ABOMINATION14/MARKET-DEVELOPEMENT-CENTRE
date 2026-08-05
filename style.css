@@ -930,6 +930,177 @@ footer .social i:hover{
     background:var(--red);
 }
 
+/* ================= AUTH TABS ================= */
+.auth-tabs{
+    display:flex;
+    gap:10px;
+    margin-bottom:25px;
+}
+
+.tab-btn{
+    flex:1;
+    padding:14px;
+    border:none;
+    border-radius:30px;
+    background:var(--bggreen);
+    color:var(--darkgreen);
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.3s;
+    border:2px solid transparent;
+}
+
+.tab-btn.active{
+    background:var(--green);
+    color:#fff;
+}
+
+.tab-btn:hover{
+    border-color:var(--green);
+}
+
+.forgot-row{
+    text-align:right;
+    margin-bottom:18px;
+}
+
+.forgot-row a{
+    color:var(--orange);
+    font-size:15px;
+    font-weight:600;
+}
+
+/* ================= LOCATION BAR ================= */
+.location-bar{
+    background:linear-gradient(90deg,#fff8e1,#fff3e0);
+    padding:12px 6%;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    border-bottom:2px solid #ffe0b2;
+}
+
+.location-bar i{
+    color:var(--red);
+    font-size:22px;
+}
+
+.location-bar .loc-text{
+    flex:1;
+    font-size:16px;
+    color:var(--darkgreen);
+}
+
+.location-bar .loc-text strong{
+    color:#d32f2f;
+}
+
+.detect-btn{
+    padding:10px 22px;
+    border:none;
+    border-radius:25px;
+    background:var(--green);
+    color:#fff;
+    font-size:15px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:.3s;
+}
+
+.detect-btn:hover{
+    background:var(--darkgreen);
+}
+
+/* ================= PAYMENT METHODS ================= */
+.payment-methods{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:18px;
+}
+
+.pay-option{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:15px;
+    border:2px solid #ddd;
+    border-radius:12px;
+    cursor:pointer;
+    transition:.3s;
+}
+
+.pay-option:hover{
+    border-color:var(--green);
+}
+
+.pay-option.selected{
+    border-color:var(--green);
+    background:#f0f8f0;
+}
+
+.pay-option input{
+    width:auto !important;
+    margin-bottom:0 !important;
+}
+
+.pay-option i{
+    font-size:24px;
+    color:var(--green);
+}
+
+.pay-option .pay-label{
+    font-weight:600;
+    color:var(--darkgreen);
+    font-size:17px;
+}
+
+.pay-option .pay-sub{
+    color:#777;
+    font-size:13px;
+}
+
+.payment-details{
+    display:none;
+    background:#f9f9f9;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:18px;
+}
+
+.payment-details.show{
+    display:block;
+}
+
+/* ================= WEIGHT SELECTOR ================= */
+.weight-selector{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin:10px 0;
+    flex-wrap:wrap;
+}
+
+.weight-btn{
+    padding:8px 16px;
+    border:2px solid #ddd;
+    border-radius:20px;
+    background:#fff;
+    cursor:pointer;
+    font-size:14px;
+    transition:.3s;
+}
+
+.weight-btn.active{
+    background:var(--green);
+    color:#fff;
+    border-color:var(--green);
+}
+
 /* ================= PROFILE ================= */
 .profile-section{
     padding:50px 6%;

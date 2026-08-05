@@ -24,7 +24,7 @@
         <li><a href="products.html" class="active"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
         <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
         <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
-        <li><a href="login.html"><i class="fa-solid fa-user"></i> Login</a></li>
+        <li><a href="login.html"><i class="fa-solid fa-user"></i> <span id="userName">Login</span></a></li>
     </ul>
 
     <div class="icons">
@@ -32,9 +32,23 @@
             <i class="fa-solid fa-cart-shopping"></i>
             <span id="cartCount">0</span>
         </a>
+        <a href="#" onclick="logout();return false;" id="logoutBtn" style="display:none;" title="Sign Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+        </a>
         <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
     </div>
 </nav>
+
+<!-- ================= LOCATION BAR ================= -->
+<div class="location-bar">
+    <i class="fa-solid fa-location-dot"></i>
+    <div class="loc-text" id="locText">
+        Deliver to: <strong>Select location</strong>
+    </div>
+    <button class="detect-btn" onclick="detectLocation()">
+        <i class="fa-solid fa-crosshairs"></i> Detect Location
+    </button>
+</div>
 
 <!-- ================= HERO ================= -->
 <section class="hero" style="padding:40px 6%;">
@@ -103,6 +117,19 @@
 </footer>
 
 <script src="script.js"></script>
+<script>
+// Auth guard - must be logged in to view products
+if(!isLoggedIn()){
+    window.location.href='login.html';
+} else {
+    let user=getCurrentUser();
+    if(user){
+        document.getElementById('userName').innerText = user.name.split(' ')[0];
+        document.getElementById('logoutBtn').style.display = 'inline';
+    }
+    loadLocation();
+}
+</script>
 <script src="products.js"></script>
 </body>
 </html>

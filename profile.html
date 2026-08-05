@@ -107,9 +107,16 @@
 <script src="script.js"></script>
 <script>
 // =============================
+// Auth guard - must be logged in
+// =============================
+if(!isLoggedIn()){
+    window.location.href='login.html';
+}
+
+// =============================
 // Load User Data
 // =============================
-let user=JSON.parse(localStorage.getItem("user")) || null;
+let user=getCurrentUser();
 let orders=JSON.parse(localStorage.getItem("orders")) || [];
 let myProducts=JSON.parse(localStorage.getItem("myProducts")) || [];
 
@@ -137,7 +144,7 @@ function loadProfile(){
             <div class="cart-item" style="flex-direction:column;align-items:flex-start;">
                 <h3>Order #${i+1} - ${o.date}</h3>
                 <p>📍 ${o.address}</p>
-                <p>💰 Total: $${o.total}</p>
+                <p>💰 Total: ₹${o.total}</p>
                 <p>💳 ${o.payment}</p>
             </div>`;
         });
@@ -153,7 +160,7 @@ function loadProfile(){
             listingsList.innerHTML += `
             <div class="cart-item" style="flex-direction:column;align-items:flex-start;">
                 <h3>${p.name}</h3>
-                <p>💰 $${p.price} | 📦 ${p.quantity}</p>
+                <p>💰 ₹${p.price} | 📦 ${p.quantity}</p>
             </div>`;
         });
     }
@@ -186,13 +193,8 @@ function saveSettings(){
 }
 
 // =============================
-// Logout
+// Logout (uses global async logout from script.js)
 // =============================
-function logout(){
-    localStorage.removeItem("user");
-    showToast("Logged out successfully");
-    setTimeout(()=>{window.location.href="index.html";},1200);
-}
 
 loadProfile();
 updateCartCount();

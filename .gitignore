@@ -1,0 +1,22 @@
+# ============================================
+# MARKET DEVELOPMENT CENTRE - Git Ignore
+# ============================================
+
+# Java compiled files
+*.class
+
+# Node.js runtime data (created automatically by server.js)
+data/
+
+# Log files
+*.log
+
+# Temp files
+*.tmp
+test.txt
+push_output.txt
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

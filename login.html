@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Market Development Centre | Login</title>
+<title>Market Development Centre | Sign In / Sign Up</title>
 <link rel="stylesheet" href="style.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -14,21 +14,21 @@
 
 <!-- ================= NAVBAR ================= -->
 <nav>
-    <a href="index.html" class="logo">
+    <a href="login.html" class="logo">
         <i class="fa-solid fa-store"></i>
         <span>Market Development<br><small>Centre</small></span>
     </a>
 
     <ul>
-        <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
-        <li><a href="products.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
-        <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
-        <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
-        <li><a href="login.html" class="active"><i class="fa-solid fa-user"></i> Login</a></li>
+        <li><a href="login.html"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a href="login.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
+        <li><a href="login.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
+        <li><a href="login.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
+        <li><a href="login.html" class="active"><i class="fa-solid fa-user"></i> Sign In</a></li>
     </ul>
 
     <div class="icons">
-        <a href="cart.html">
+        <a href="login.html">
             <i class="fa-solid fa-cart-shopping"></i>
             <span id="cartCount">0</span>
         </a>
@@ -36,30 +36,103 @@
     </div>
 </nav>
 
-<!-- ================= LOGIN SECTION ================= -->
+<!-- ================= AUTH SECTION ================= -->
 <section class="auth-section">
+
+    <!-- LOGIN / REGISTER TABS -->
     <div class="auth-box">
+
         <div class="auth-icon">
             <i class="fa-solid fa-user-lock"></i>
         </div>
-        <h1>Welcome Back 👋</h1>
-        <p>Login to continue buying &amp; selling</p>
+        <h1 id="authTitle">Welcome Back 👋</h1>
+        <p id="authSub">Sign in to continue or create a new account</p>
 
-        <form id="loginForm" onsubmit="return handleLogin(event)">
-            <label for="email">Email</label>
-            <input type="email" id="email" placeholder="Enter your email" required>
+        <!-- Tab Buttons -->
+        <div class="auth-tabs">
+            <button class="tab-btn active" onclick="switchTab('login')" id="tabLogin" type="button">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In
+            </button>
+            <button class="tab-btn" onclick="switchTab('register')" id="tabRegister" type="button">
+                <i class="fa-solid fa-user-plus"></i> Sign Up
+            </button>
+        </div>
 
-            <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Enter your password" required>
+        <!-- ======= SIGN IN FORM ======= -->
+        <form id="loginForm" onsubmit="return handleLogin(event)" style="display:block;">
+            <label for="loginEmail">Email</label>
+            <input type="email" id="loginEmail" placeholder="Enter your email" required>
+
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter your password" required>
+
+            <div class="forgot-row">
+                <a href="#" onclick="showForgot();return false;">Forgot Password?</a>
+            </div>
 
             <button type="submit" class="auth-btn">
-                <i class="fa-solid fa-right-to-bracket"></i> Login
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In
             </button>
         </form>
 
-        <p class="auth-switch">
-            Don't have an account?
-            <a href="register.html">Register</a>
+        <!-- ======= SIGN UP FORM ======= -->
+        <form id="registerForm" onsubmit="return handleRegister(event)" style="display:none;">
+            <label for="regName">Full Name</label>
+            <input type="text" id="regName" placeholder="Enter your full name" required>
+
+            <label for="regEmail">Email</label>
+            <input type="email" id="regEmail" placeholder="Enter your email" required>
+
+            <label for="regPhone">Mobile Number</label>
+            <input type="tel" id="regPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
+
+            <label for="regRole">I want to</label>
+            <select id="regRole">
+                <option value="buyer">Buy Products</option>
+                <option value="seller">Sell Products</option>
+                <option value="both">Both Buy &amp; Sell</option>
+            </select>
+
+            <label for="regPassword">Password</label>
+            <input type="password" id="regPassword" placeholder="Create a password" required>
+
+            <button type="submit" class="auth-btn" style="background:#ff9800;">
+                <i class="fa-solid fa-user-plus"></i> Create Account
+            </button>
+        </form>
+
+        <!-- ======= FORGOT PASSWORD (OTP) ======= -->
+        <div id="forgotBox" style="display:none;">
+            <h1 style="font-size:24px;">🔐 Reset Password</h1>
+            <p>Enter your mobile number to receive an OTP</p>
+
+            <div id="forgotStep1">
+                <label for="forgotPhone">Mobile Number</label>
+                <input type="tel" id="forgotPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
+                <button type="button" class="auth-btn" style="background:var(--orange);" onclick="sendOTP()">
+                    <i class="fa-solid fa-paper-plane"></i> Send OTP
+                </button>
+            </div>
+
+            <div id="forgotStep2" style="display:none;">
+                <label for="otpInput">Enter OTP</label>
+                <input type="text" id="otpInput" placeholder="6-digit OTP" maxlength="6" required>
+
+                <label for="newPassword">New Password</label>
+                <input type="password" id="newPassword" placeholder="Enter new password" required>
+
+                <button type="button" class="auth-btn" onclick="verifyOTP()">
+                    <i class="fa-solid fa-shield-halved"></i> Verify &amp; Reset
+                </button>
+            </div>
+
+            <p class="auth-switch">
+                <a href="#" onclick="hideForgot();return false;">← Back to Sign In</a>
+            </p>
+        </div>
+
+        <p class="auth-switch" id="authSwitch">
+            Don't have an account? <a href="#" onclick="switchTab('register');return false;">Sign Up</a>
         </p>
     </div>
 </section>
@@ -81,18 +154,221 @@
 
 <script src="script.js"></script>
 <script>
-function handleLogin(event){
-    event.preventDefault();
-    let email=document.getElementById("email").value;
-    let password=document.getElementById("password").value;
+// =============================
+// API Base URL
+// =============================
+const API = 'http://localhost:8080';
 
-    if(email && password){
-        localStorage.setItem("user",JSON.stringify({email:email, name:"Customer"}));
-        showToast("Login successful! Welcome back 🎉");
-        setTimeout(()=>{window.location.href="index.html";},1200);
+// =============================
+// Switch between Sign In / Sign Up
+// =============================
+let currentOtpPhone = null;
+let currentOtpResetToken = null;
+
+function switchTab(tab){
+    if(tab==='login'){
+        document.getElementById('loginForm').style.display='block';
+        document.getElementById('registerForm').style.display='none';
+        document.getElementById('forgotBox').style.display='none';
+        document.getElementById('tabLogin').classList.add('active');
+        document.getElementById('tabRegister').classList.remove('active');
+        document.getElementById('authTitle').innerText='Welcome Back 👋';
+        document.getElementById('authSub').innerText='Sign in to continue buying & selling';
+        document.getElementById('authSwitch').style.display='block';
+    }else{
+        document.getElementById('loginForm').style.display='none';
+        document.getElementById('registerForm').style.display='block';
+        document.getElementById('forgotBox').style.display='none';
+        document.getElementById('tabRegister').classList.add('active');
+        document.getElementById('tabLogin').classList.remove('active');
+        document.getElementById('authTitle').innerText='Create Account 📝';
+        document.getElementById('authSub').innerText='Join us to buy & sell products';
+        document.getElementById('authSwitch').innerHTML="Already have an account? <a href='#' onclick=\"switchTab('login');return false;\">Sign In</a>";
     }
+}
+
+// =============================
+// SIGN IN
+// =============================
+async function handleLogin(event){
+    event.preventDefault();
+    let email=document.getElementById('loginEmail').value.trim();
+    let password=document.getElementById('loginPassword').value;
+
+    if(!email || !password){
+        showToast('Please enter email and password');
+        return false;
+    }
+
+    let btn=event.target.querySelector('.auth-btn');
+    btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Signing in...';
+    btn.disabled=true;
+
+    try{
+        let res=await fetch(API+'/api/auth/login',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({email:email,password:password})
+        });
+        let data=await res.json();
+
+        if(data.success){
+            localStorage.setItem('token',data.token);
+            localStorage.setItem('user',JSON.stringify(data.user));
+            showToast('✅ Welcome back, '+data.user.name+'!');
+            setTimeout(()=>{window.location.href='index.html';},1200);
+        }else{
+            showToast('❌ '+data.message);
+        }
+    }catch(e){
+        showToast('❌ Cannot connect to server. Is the backend running?');
+    }
+
+    btn.innerHTML='<i class="fa-solid fa-right-to-bracket"></i> Sign In';
+    btn.disabled=false;
     return false;
 }
+
+// =============================
+// SIGN UP
+// =============================
+async function handleRegister(event){
+    event.preventDefault();
+    let name=document.getElementById('regName').value.trim();
+    let email=document.getElementById('regEmail').value.trim();
+    let phone=document.getElementById('regPhone').value.trim();
+    let role=document.getElementById('regRole').value;
+    let password=document.getElementById('regPassword').value;
+
+    if(!name || !email || !phone || !password){
+        showToast('Please fill all fields');
+        return false;
+    }
+    if(!/^\d{10}$/.test(phone)){
+        showToast('Please enter a valid 10-digit mobile number');
+        return false;
+    }
+
+    let btn=event.target.querySelector('.auth-btn');
+    btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
+    btn.disabled=true;
+
+    try{
+        let res=await fetch(API+'/api/auth/register',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({name,email,phone,role,password})
+        });
+        let data=await res.json();
+
+        if(data.success){
+            localStorage.setItem('token',data.token);
+            localStorage.setItem('user',JSON.stringify(data.user));
+            showToast('🎉 Welcome, '+data.user.name+'! Account created.');
+            setTimeout(()=>{window.location.href='index.html';},1200);
+        }else{
+            showToast('❌ '+data.message);
+        }
+    }catch(e){
+        showToast('❌ Cannot connect to server. Is the backend running?');
+    }
+
+    btn.innerHTML='<i class="fa-solid fa-user-plus"></i> Create Account';
+    btn.disabled=false;
+    return false;
+}
+
+// =============================
+// FORGOT PASSWORD - OTP
+// =============================
+function showForgot(){
+    document.getElementById('loginForm').style.display='none';
+    document.getElementById('registerForm').style.display='none';
+    document.getElementById('forgotBox').style.display='block';
+    document.getElementById('authSwitch').style.display='none';
+    document.getElementById('authTitle').innerText='🔐 Reset Password';
+    document.getElementById('authSub').innerText='Enter your mobile number to receive OTP';
+}
+
+function hideForgot(){
+    document.getElementById('forgotBox').style.display='none';
+    document.getElementById('loginForm').style.display='block';
+    document.getElementById('authSwitch').style.display='block';
+    document.getElementById('authTitle').innerText='Welcome Back 👋';
+    document.getElementById('authSub').innerText='Sign in to continue buying & selling';
+}
+
+async function sendOTP(){
+    let phone=document.getElementById('forgotPhone').value.trim();
+    if(!/^\d{10}$/.test(phone)){
+        showToast('Please enter a valid 10-digit mobile number');
+        return;
+    }
+
+    try{
+        let res=await fetch(API+'/api/auth/forgot',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({phone:phone})
+        });
+        let data=await res.json();
+
+        if(data.success){
+            currentOtpPhone=phone;
+            currentOtpResetToken=data.resetToken;
+            document.getElementById('forgotStep1').style.display='none';
+            document.getElementById('forgotStep2').style.display='block';
+            // Demo: show OTP for testing (in production this is sent via SMS)
+            showToast('📱 OTP sent to '+phone+'! (Demo OTP: '+data.otp+')');
+        }else{
+            showToast('❌ '+data.message);
+        }
+    }catch(e){
+        showToast('❌ Cannot connect to server. Is the backend running?');
+    }
+}
+
+async function verifyOTP(){
+    let otp=document.getElementById('otpInput').value.trim();
+    let newPassword=document.getElementById('newPassword').value;
+
+    if(!otp || !newPassword){
+        showToast('Please enter OTP and new password');
+        return;
+    }
+
+    try{
+        let res=await fetch(API+'/api/auth/verify-otp',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({phone:currentOtpPhone,otp:otp,newPassword:newPassword})
+        });
+        let data=await res.json();
+
+        if(data.success){
+            showToast('✅ Password reset successful! Please sign in.');
+            setTimeout(()=>{
+                hideForgot();
+                switchTab('login');
+            },1500);
+        }else{
+            showToast('❌ '+data.message);
+        }
+    }catch(e){
+        showToast('❌ Cannot connect to server.');
+    }
+}
+
+// =============================
+// Check if already logged in
+// =============================
+let token=localStorage.getItem('token');
+if(token){
+    // Already logged in - redirect to home
+    window.location.href='index.html';
+}
+
+updateCartCount();
 </script>
 </body>
 </html>

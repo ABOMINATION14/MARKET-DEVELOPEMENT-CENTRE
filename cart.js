@@ -34,11 +34,12 @@ function displayCart(){
         totalPrice += item.price * item.qty;
         totalItems += item.qty;
 
-        cartItems.innerHTML += `
+cartItems.innerHTML += `
         <div class="cart-item">
             <div>
                 <h3><i class="fa-solid fa-apple-whole" style="color:#4caf50;margin-right:8px;"></i>${item.name}</h3>
-                <p style="color:#777;margin-top:5px;">Price: $${item.price.toFixed(2)}</p>
+                <p style="color:#777;margin-top:5px;">Price: ${formatPrice(item.price)} / ${item.unit||'kg'}</p>
+                <p style="color:#777;margin-top:3px;">Weight/Quantity: ${item.qty} ${item.unit||'kg'}</p>
             </div>
             <div style="text-align:center;">
                 <p style="color:#777;margin-bottom:5px;">Quantity</p>
@@ -50,7 +51,7 @@ function displayCart(){
             </div>
             <div style="text-align:center;">
                 <p style="color:#777;margin-bottom:5px;">Subtotal</p>
-                <h3 style="color:#ff9800;">$${(item.price * item.qty).toFixed(2)}</h3>
+                <h3 style="color:#ff9800;">${formatPrice(item.price * item.qty)}</h3>
             </div>
             <button class="remove-btn" onclick="removeItem(${index})">
                 <i class="fa-solid fa-trash"></i> Remove
@@ -62,7 +63,7 @@ function displayCart(){
 }
 
 // =============================
-// Update Summary
+// Update Summary (INR ₹)
 // =============================
 function updateSummary(items,price){
     let totalItemsEl=document.getElementById("totalItems");
@@ -70,11 +71,12 @@ function updateSummary(items,price){
     let totalPriceEl=document.getElementById("totalPrice");
     let deliveryEl=document.getElementById("delivery");
 
-    let delivery = price>=50 ? 0 : 2.99;
+    // Free delivery on orders above ₹500, else ₹40
+    let delivery = price>=500 ? 0 : 40;
 
     if(totalItemsEl) totalItemsEl.innerText=items;
     if(subTotalEl) subTotalEl.innerText=price.toFixed(2);
-    if(deliveryEl) deliveryEl.innerText = delivery===0 ? "FREE" : "$"+delivery.toFixed(2);
+    if(deliveryEl) deliveryEl.innerText = delivery===0 ? "FREE" : formatPrice(delivery);
     if(totalPriceEl) totalPriceEl.innerText=(price+delivery).toFixed(2);
 }
 

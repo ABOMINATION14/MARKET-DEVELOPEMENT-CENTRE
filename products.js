@@ -11,16 +11,21 @@ function loadAllProducts(){
 
     container.innerHTML="";
 
-    products.forEach(p=>{
+products.forEach(p=>{
         let stars="⭐".repeat(p.rating) + "☆".repeat(5-p.rating);
         container.innerHTML += `
         <div class="card" data-category="${p.category}" data-name="${p.name.toLowerCase()}">
+            <div class="weight-selector" id="ws-${p.id}">
+                <button class="weight-btn active" onclick="setWeight('${p.id}',1,'${p.unit}')">1 ${p.unit}</button>
+                <button class="weight-btn" onclick="setWeight('${p.id}',2,'${p.unit}')">2 ${p.unit}</button>
+                <button class="weight-btn" onclick="setWeight('${p.id}',5,'${p.unit}')">5 ${p.unit}</button>
+            </div>
             <img src="${p.image}" alt="${p.name}">
             <h3>${p.name}</h3>
-            <p class="price">$${p.price.toFixed(2)}</p>
+            <p class="price">${formatPrice(p.price)}</p>
             <p class="desc">${p.desc}</p>
             <p class="rating">${stars}</p>
-            <button onclick="addCart('${p.name}',${p.price})">
+            <button onclick="addCartWeighted('${p.name}',${p.price},'ws-${p.id}')">
                 <i class="fa-solid fa-cart-plus"></i> Add To Cart
             </button>
         </div>`;

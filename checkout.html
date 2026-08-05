@@ -36,6 +36,17 @@
     </div>
 </nav>
 
+<!-- ================= LOCATION BAR ================= -->
+<div class="location-bar">
+    <i class="fa-solid fa-location-dot"></i>
+    <div class="loc-text" id="locText">
+        Deliver to: <strong>Select location</strong>
+    </div>
+    <button class="detect-btn" onclick="detectLocation()">
+        <i class="fa-solid fa-crosshairs"></i> Detect Location
+    </button>
+</div>
+
 <!-- ================= CHECKOUT HEADER ================= -->
 <section class="cart-header">
     <h1>💳 Checkout</h1>
@@ -54,20 +65,86 @@
             <label for="phone">Phone Number</label>
             <input type="tel" id="phone" placeholder="Enter your phone number" required>
 
-            <label for="address">Delivery Address</label>
-            <textarea id="address" rows="3" placeholder="Enter your full address" required></textarea>
+            <label for="address">Delivery Address <span style="color:#4caf50;font-size:13px;">(Detect location or type)</span></label>
+            <textarea id="address" rows="3" placeholder="Enter your delivery address" required></textarea>
 
-            <label for="payment">Payment Method</label>
-            <select id="payment">
-                <option value="cod">Cash on Delivery</option>
-                <option value="card">Credit / Debit Card</option>
-                <option value="upi">UPI / GPay</option>
-            </select>
+            <h2 style="margin-top:25px;">💳 Payment Method</h2>
+
+            <div class="payment-methods">
+                <div class="pay-option selected" onclick="selectPayment('upi',this)">
+                    <input type="radio" name="payment" value="upi" checked>
+                    <i class="fa-solid fa-mobile-screen"></i>
+                    <div>
+                        <div class="pay-label">UPI / GPay</div>
+                        <div class="pay-sub">Pay with GPay, PhonePe, Paytm</div>
+                    </div>
+                </div>
+                <div class="pay-option" onclick="selectPayment('netbanking',this)">
+                    <input type="radio" name="payment" value="netbanking">
+                    <i class="fa-solid fa-building-columns"></i>
+                    <div>
+                        <div class="pay-label">Netbanking</div>
+                        <div class="pay-sub">Pay directly from your bank account</div>
+                    </div>
+                </div>
+                <div class="pay-option" onclick="selectPayment('card',this)">
+                    <input type="radio" name="payment" value="card">
+                    <i class="fa-solid fa-credit-card"></i>
+                    <div>
+                        <div class="pay-label">Credit / Debit Card</div>
+                        <div class="pay-sub">Visa, Mastercard, RuPay</div>
+                    </div>
+                </div>
+                <div class="pay-option" onclick="selectPayment('cod',this)">
+                    <input type="radio" name="payment" value="cod">
+                    <i class="fa-solid fa-money-bill-wave"></i>
+                    <div>
+                        <div class="pay-label">Cash on Delivery</div>
+                        <div class="pay-sub">Pay when you receive the order</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UPI Details -->
+            <div class="payment-details" id="upiDetails">
+                <label for="upiId">UPI ID</label>
+                <input type="text" id="upiId" placeholder="yourname@upi">
+            </div>
+
+            <!-- Netbanking Details -->
+            <div class="payment-details" id="netbankingDetails">
+                <label for="bankName">Select Bank</label>
+                <select id="bankName">
+                    <option value="">-- Select Bank --</option>
+                    <option>State Bank of India</option>
+                    <option>HDFC Bank</option>
+                    <option>ICICI Bank</option>
+                    <option>Axis Bank</option>
+                    <option>Punjab National Bank</option>
+                    <option>Bank of Baroda</option>
+                </select>
+            </div>
+
+            <!-- Card Details -->
+            <div class="payment-details" id="cardDetails">
+                <label for="cardNo">Card Number</label>
+                <input type="text" id="cardNo" placeholder="1234 5678 9012 3456">
+                <div style="display:flex;gap:10px;">
+                    <div style="flex:1;">
+                        <label for="cardExp">Expiry</label>
+                        <input type="text" id="cardExp" placeholder="MM/YY">
+                    </div>
+                    <div style="flex:1;">
+                        <label for="cardCvv">CVV</label>
+                        <input type="text" id="cardCvv" placeholder="123" maxlength="3">
+                    </div>
+                </div>
+            </div>
 
             <label for="coupon">Coupon Code (optional)</label>
             <input type="text" id="coupon" placeholder="Enter coupon code">
 
-            <button type="submit" class="pay-btn">
+            <button type="submit" class="pay-btn" id="placeOrderBtn">
                 <i class="fa-solid fa-circle-check"></i> Place Order
             </button>
         </form>
@@ -78,7 +155,7 @@
         <div id="orderItems"></div>
         <div class="summary-row">
             <span>Subtotal:</span>
-            <span>$<span id="subTotal">0.00</span></span>
+            <span>₹<span id="subTotal">0.00</span></span>
         </div>
         <div class="summary-row">
             <span>Delivery:</span>
@@ -86,7 +163,7 @@
         </div>
         <div class="summary-row total">
             <span>Total:</span>
-            <span>$<span id="totalPrice">0.00</span></span>
+            <span>₹<span id="totalPrice">0.00</span></span>
         </div>
     </div>
 </section>
@@ -111,7 +188,29 @@
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
 // =============================
-// Display Order Summary
+// Auth guard - must be logged in
+// =============================
+if(!isLoggedIn()){
+    window.location.href='login.html';
+}
+
+// =============================
+// Payment Method Selection
+// =============================
+function selectPayment(method, el){
+    // Update selected styling
+    document.querySelectorAll('.pay-option').forEach(o=>o.classList.remove('selected'));
+    el.classList.add('selected');
+    el.querySelector('input').checked = true;
+
+    // Show/hide payment details
+    document.getElementById('upiDetails').classList.toggle('show', method==='upi');
+    document.getElementById('netbankingDetails').classList.toggle('show', method==='netbanking');
+    document.getElementById('cardDetails').classList.toggle('show', method==='card');
+}
+
+// =============================
+// Display Order Summary (INR ₹)
 // =============================
 function displayOrder(){
     let orderItems=document.getElementById("orderItems");
@@ -123,66 +222,111 @@ function displayOrder(){
         sub += item.price*item.qty;
         items += item.qty;
         orderItems.innerHTML += `
-        <div class="summary-row" style="font-size:15px;">
-            <span>${item.name} x${item.qty}</span>
-            <span>$${(item.price*item.qty).toFixed(2)}</span>
+        <div class="summary-row" style="font-size:14px;">
+            <span>${item.name} x${item.qty} ${item.unit||''}</span>
+            <span>${formatPrice(item.price*item.qty)}</span>
         </div>`;
     });
 
-    let delivery = sub>=50 ? 0 : 2.99;
+    // Free delivery above ₹500, else ₹40
+    let delivery = sub>=500 ? 0 : 40;
     document.getElementById("subTotal").innerText=sub.toFixed(2);
-    document.getElementById("delivery").innerText=delivery===0?"FREE":"$"+delivery.toFixed(2);
+    document.getElementById("delivery").innerText=delivery===0?"FREE":formatPrice(delivery);
     document.getElementById("totalPrice").innerText=(sub+delivery).toFixed(2);
 }
 
 // =============================
-// Place Order
+// Place Order (sends to backend API)
 // =============================
-function placeOrder(event){
+async function placeOrder(event){
     event.preventDefault();
 
-    let name=document.getElementById("name").value;
-    let phone=document.getElementById("phone").value;
-    let address=document.getElementById("address").value;
-    let payment=document.getElementById("payment").value;
-    let coupon=document.getElementById("coupon").value;
+    if(!isLoggedIn()){
+        showToast('Please sign in first');
+        window.location.href='login.html';
+        return false;
+    }
+
+    let name=document.getElementById("name").value.trim();
+    let phone=document.getElementById("phone").value.trim();
+    let address=document.getElementById("address").value.trim();
+    let payment=document.querySelector('input[name="payment"]:checked').value;
+    let coupon=document.getElementById("coupon").value.trim();
 
     if(cart.length===0){
         showToast("Your cart is empty!");
         return false;
     }
+    if(!name || !phone || !address){
+        showToast("Please fill all delivery details");
+        return false;
+    }
 
-    // Save order
-    let order={
+    let user=getCurrentUser();
+    let token=getToken();
+
+    let btn=document.getElementById("placeOrderBtn");
+    btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Placing order...';
+    btn.disabled=true;
+
+    // Get saved location
+    let location=null;
+    try{
+        location=JSON.parse(localStorage.getItem('deliveryLocation')||'null');
+    }catch(e){}
+
+    let orderData={
         name:name,
         phone:phone,
         address:address,
         payment:payment,
         coupon:coupon,
-        items:cart,
-        date:new Date().toLocaleString(),
-        total:document.getElementById("totalPrice").innerText
+        items:cart.map(i=>({name:i.name, price:i.price, qty:i.qty, unit:i.unit||'kg'})),
+        email:user ? user.email : null,
+        location:location ? {lat:location.lat,lng:location.lng} : null
     };
 
-    let orders=JSON.parse(localStorage.getItem("orders")) || [];
-    orders.push(order);
-    localStorage.setItem("orders",JSON.stringify(orders));
+    try{
+        let res=await fetch(API+'/api/orders',{
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json',
+                'Authorization':'Bearer '+token
+            },
+            body:JSON.stringify(orderData)
+        });
+        let data=await res.json();
 
-    // Clear cart
-    localStorage.setItem("cart","[]");
-    updateCartCount();
+        if(data.success){
+            // Clear cart
+            localStorage.setItem("cart","[]");
+            updateCartCount();
 
-    showToast("🎉 Order placed successfully!");
+            showToast("🎉 Order placed successfully!");
 
-    setTimeout(()=>{
-        window.location.href="order-success.html?total="+order.total;
-    },1500);
+setTimeout(()=>{
+                window.location.href="order-success.html?total="+data.order.total+"&orderId="+data.order.id;
+            },1500);
+        }else{
+            showToast("❌ "+data.message);
+            btn.innerHTML='<i class="fa-solid fa-circle-check"></i> Place Order';
+            btn.disabled=false;
+        }
+    }catch(e){
+        showToast("❌ Cannot connect to server. Is the backend running?");
+        btn.innerHTML='<i class="fa-solid fa-circle-check"></i> Place Order';
+        btn.disabled=false;
+    }
 
     return false;
 }
 
+// =============================
+// Initialize
+// =============================
 displayOrder();
 updateCartCount();
+loadLocation();
 </script>
 </body>
 </html>

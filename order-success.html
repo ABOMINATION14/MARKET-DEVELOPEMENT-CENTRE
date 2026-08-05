@@ -51,9 +51,9 @@
                 <span>Order Number:</span>
                 <span style="color:#4caf50;font-weight:700;">#MDC-<span id="orderNum">0000</span></span>
             </div>
-            <div class="summary-row">
+<div class="summary-row">
                 <span>Total Paid:</span>
-                <span style="color:#ff9800;font-weight:700;">$<span id="orderTotal">0.00</span></span>
+                <span style="color:#ff9800;font-weight:700;">₹<span id="orderTotal">0.00</span></span>
             </div>
             <div class="summary-row">
                 <span>Payment Method:</span>
@@ -100,8 +100,9 @@
 <script>
 let params=new URLSearchParams(window.location.search);
 let total=params.get("total")||"0.00";
+let orderId=params.get("orderId")||String(Math.floor(1000+Math.random()*9000));
 document.getElementById("orderTotal").innerText=total;
-document.getElementById("orderNum").innerText=Math.floor(1000+Math.random()*9000);
+document.getElementById("orderNum").innerText=orderId;
 updateCartCount();
 </script>
 </body>

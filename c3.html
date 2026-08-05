@@ -49,9 +49,9 @@
 <!-- ================= STAT CARDS ================= -->
 <section class="categories" style="padding:20px 6%;">
     <div class="category-box">
-        <div class="category" style="border-left:5px solid #4caf50;">
+<div class="category" style="border-left:5px solid #4caf50;">
             <i class="fa-solid fa-sack-dollar" style="font-size:45px;color:#4caf50;"></i>
-            <h2 id="statSales">$0</h2>
+            <h2 id="statSales">₹0</h2>
             <h3>Total Sales</h3>
         </div>
         <div class="category" style="border-left:5px solid #ff9800;">
@@ -129,7 +129,7 @@ orders.forEach(o=>{
     totalSales += parseFloat(o.total) || 0;
 });
 
-document.getElementById("statSales").innerText="$"+totalSales.toFixed(2);
+document.getElementById("statSales").innerText="₹"+totalSales.toFixed(2);
 document.getElementById("statOrders").innerText=orders.length;
 document.getElementById("statProducts").innerText=products.length + myProducts.length;
 document.getElementById("statSellers").innerText=user ? "1" : "0";
@@ -204,7 +204,7 @@ if(orders.length===0){
                 <span style="background:#4caf50;color:#fff;padding:4px 12px;border-radius:15px;font-size:13px;">${o.payment}</span>
             </div>
             <p>📦 ${o.items ? o.items.length : 0} items</p>
-            <p>💰 Total: $${o.total}</p>
+<p>💰 Total: ₹${o.total}</p>
             <p style="color:#777;font-size:13px;">🕒 ${o.date}</p>
         </div>`;
     });

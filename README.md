@@ -19,8 +19,9 @@ A complete **Buy & Sell marketplace** web application designed to be **simple an
 
 ### 🛒 Shopping Cart
 - Add, remove, and change quantities
+- Choose your own weight (1, 2, or 5 kg)
 - Order summary with delivery charges
-- Free delivery on orders above $50
+- Free delivery on orders above ₹500
 
 ### 📦 Checkout
 - Easy order form (name, phone, address)
@@ -56,6 +57,7 @@ A complete **Buy & Sell marketplace** web application designed to be **simple an
 ├── script.js           # Main JavaScript
 ├── products.js         # Products page JS
 ├── cart.js             # Cart logic JS
+├── server.js            # Node.js backend API (real auth, orders, products)
 ├── ShoppingCart.java   # Java shopping cart program
 ├── SearchProduce.java  # Java product search program
 └── images/             # SVG images
@@ -63,8 +65,22 @@ A complete **Buy & Sell marketplace** web application designed to be **simple an
 
 ## 🚀 How to Run
 
-### Web Application
-Just open `index.html` in any web browser. No installation needed!
+### Web Application (with Backend)
+```bash
+# Start the backend server (Node.js - no external dependencies needed)
+node server.js
+
+# Then open http://localhost:8080 in your browser
+```
+The backend provides:
+- Real user registration & login (with hashed passwords)
+- Forgot password via OTP (demo - OTP shown in console)
+- Order placement & retrieval
+- Product catalog (41 products with INR prices)
+- Location detection (reverse geocode)
+
+### Web Application (Static only)
+You can also just open `index.html` in any web browser to browse the UI, but login/checkout require the backend server.
 
 ### Java Programs
 ```bash

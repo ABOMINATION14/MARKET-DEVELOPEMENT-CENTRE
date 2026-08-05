@@ -53,7 +53,7 @@
             <input type="email" id="email" placeholder="Enter your email" required>
 
             <label for="phone">Phone Number</label>
-            <input type="tel" id="phone" placeholder="Enter your phone number" required>
+            <input type="tel" id="phone" placeholder="Enter your 10-digit phone number" pattern="[0-9]{10}" required>
 
             <label for="role">I want to</label>
             <select id="role">
@@ -94,18 +94,52 @@
 
 <script src="script.js"></script>
 <script>
-function handleRegister(event){
+// =============================
+// Register - uses real backend API
+// =============================
+async function handleRegister(event){
     event.preventDefault();
-    let name=document.getElementById("name").value;
-    let email=document.getElementById("email").value;
-    let phone=document.getElementById("phone").value;
+    let name=document.getElementById("name").value.trim();
+    let email=document.getElementById("email").value.trim();
+    let phone=document.getElementById("phone").value.trim();
     let role=document.getElementById("role").value;
+    let password=document.getElementById("password").value;
 
-    if(name && email && phone){
-        localStorage.setItem("user",JSON.stringify({name:name, email:email, phone:phone, role:role}));
-        showToast("Registration successful! Welcome " + name + " 🎉");
-        setTimeout(()=>{window.location.href="index.html";},1500);
+    if(!name || !email || !phone || !password){
+        showToast("Please fill all fields");
+        return false;
     }
+    if(!/^\d{10}$/.test(phone)){
+        showToast("Please enter a valid 10-digit mobile number");
+        return false;
+    }
+
+    let btn=document.querySelector('#registerForm .auth-btn');
+    btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
+    btn.disabled=true;
+
+    try{
+        let res=await fetch(API+'/api/auth/register',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({name,email,phone,role,password})
+        });
+        let data=await res.json();
+
+        if(data.success){
+            localStorage.setItem('token',data.token);
+            localStorage.setItem('user',JSON.stringify(data.user));
+            showToast("🎉 Registration successful! Welcome " + data.user.name + "!");
+            setTimeout(()=>{window.location.href="index.html";},1500);
+        }else{
+            showToast("❌ "+data.message);
+        }
+    }catch(e){
+        showToast("❌ Cannot connect to server. Start it with: node server.js");
+    }
+
+    btn.innerHTML='<i class="fa-solid fa-user-plus"></i> Register';
+    btn.disabled=false;
     return false;
 }
 </script>

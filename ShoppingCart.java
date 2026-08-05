@@ -38,13 +38,13 @@ public class ShoppingCart {
                     System.out.print("Enter Product Name: ");
                     String product = sc.nextLine();
 
-                    System.out.print("Enter Price ($): ");
+System.out.print("Enter Price (₹): ");
                     try {
                         double price = sc.nextDouble();
                         sc.nextLine();
                         cart.add(product);
                         prices.add(price);
-                        System.out.println("✅ " + product + " added successfully! ($" + price + ")");
+                        System.out.println("✅ " + product + " added successfully! (₹" + price + ")");
                     } catch (InputMismatchException e) {
                         System.out.println("❌ Invalid price. Please enter a number.");
                         sc.nextLine();
@@ -70,15 +70,15 @@ public class ShoppingCart {
                     } else {
                         System.out.println("\n🛒 Your Cart Items:");
                         double total = 0;
-                        for (int i = 0; i < cart.size(); i++) {
-                            System.out.println("   " + (i + 1) + ". " + cart.get(i) + " - $" + 
+for (int i = 0; i < cart.size(); i++) {
+                            System.out.println("   " + (i + 1) + ". " + cart.get(i) + " - ₹" + 
                                 (i < prices.size() ? prices.get(i) : 0));
                             if (i < prices.size()) {
                                 total += prices.get(i);
                             }
                         }
                         System.out.println("   -------------------");
-                        System.out.println("   TOTAL: $" + total);
+System.out.println("   TOTAL: ₹" + total);
                     }
                     break;
 
@@ -94,7 +94,7 @@ public class ShoppingCart {
                         for (Double p : prices) {
                             total += p;
                         }
-                        System.out.println("Total Amount: $" + total);
+System.out.println("Total Amount: ₹" + total);
                         System.out.println("Thank you for shopping with Market Development Centre!");
 
                         cart.clear();
