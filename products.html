@@ -1,140 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FreshMart - Products</title>
-
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/products.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Development Centre | Buy Products</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
 <body>
 
-    <!-- Navigation Bar -->
-    <header>
-        <div class="logo">
-            🛒 FreshMart
+<!-- ================= NAVBAR ================= -->
+<nav>
+    <a href="index.html" class="logo">
+        <i class="fa-solid fa-store"></i>
+        <span>Market Development<br><small>Centre</small></span>
+    </a>
+
+    <ul>
+        <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a href="products.html" class="active"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
+        <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
+        <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
+        <li><a href="login.html"><i class="fa-solid fa-user"></i> Login</a></li>
+    </ul>
+
+    <div class="icons">
+        <a href="cart.html">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cartCount">0</span>
+        </a>
+        <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
+    </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<section class="hero" style="padding:40px 6%;">
+    <div class="hero-text">
+        <h1>🛒 Buy Fresh Products</h1>
+        <p>Choose from fresh fruits, vegetables, dairy and groceries. Simple and easy to order!</p>
+        <div class="hero-buttons">
+            <a href="sell.html" class="btn-sell">
+                <i class="fa-solid fa-tag"></i> Want to Sell?
+            </a>
         </div>
+    </div>
+    <div class="hero-image">
+        <img src="images/buying.svg" alt="Buy Products">
+    </div>
+</section>
 
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="products.html">Products</a>
-            <a href="cart.html">Cart 🛍️</a>
-            <a href="profile.html">Profile</a>
-        </nav>
-    </header>
-
-
-    <!-- Page Heading -->
-    <section class="hero">
-        <h1>Fresh Products Delivered To Your Door</h1>
-        <p>Choose from fresh fruits, vegetables, dairy and groceries</p>
-    </section>
-
-
-    <!-- Search and Filter -->
-    <section class="search-section">
-
-        <input 
-        type="text" 
-        id="searchBox"
-        placeholder="Search products..."
-        onkeyup="searchProducts()">
-
-        <select id="category" onchange="filterCategory()">
+<!-- ================= SEARCH & FILTER ================= -->
+<section class="search">
+    <h2>🔍 Find Your Product</h2>
+    <p>Type the name or use the mic button</p>
+    <div class="search-box">
+        <input type="text" placeholder="Search products..." id="searchBox" onkeyup="searchProduct()">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <button class="voice-btn" onclick="voiceSearch()" title="Search by voice">
+            <i class="fa-solid fa-microphone"></i>
+        </button>
+    </div>
+    <div style="margin-top:20px;">
+        <select id="category" onchange="filterCategory()" style="padding:14px 20px;border-radius:25px;border:2px solid #2e7d32;font-size:17px;cursor:pointer;">
             <option value="all">All Categories</option>
-            <option value="fruit">Fruits</option>
             <option value="vegetable">Vegetables</option>
+            <option value="fruit">Fruits</option>
             <option value="dairy">Dairy</option>
             <option value="grocery">Groceries</option>
+            <option value="drinks">Drinks</option>
         </select>
+    </div>
+</section>
 
-    </section>
+<!-- ================= PRODUCTS ================= -->
+<section class="products">
+    <h2 class="section-title">All Products</h2>
+    <p class="section-sub">Fresh products delivered to your door</p>
+    <div class="product-grid" id="productList">
+        <!-- Products loaded by JS -->
+    </div>
+    <div id="noResults" style="display:none;text-align:center;padding:40px;font-size:22px;color:#777;">
+        😕 No products found. Try a different search.
+    </div>
+</section>
 
+<!-- ================= FOOTER ================= -->
+<footer>
+    <div class="footer-logo">
+        <i class="fa-solid fa-store"></i> Market Development Centre
+    </div>
+    <p>Buy &amp; Sell Fresh Products for Everyone</p>
+    <p>© 2026 Market Development Centre. All Rights Reserved.</p>
+    <div class="social">
+        <i class="fa-brands fa-facebook"></i>
+        <i class="fa-brands fa-instagram"></i>
+        <i class="fa-brands fa-twitter"></i>
+        <i class="fa-brands fa-whatsapp"></i>
+    </div>
+</footer>
 
-
-    <!-- Products Container -->
-
-    <section class="products-container" id="productList">
-
-
-        <div class="product-card" data-category="fruit">
-
-            <img src="images/apple.jpg" alt="Apple">
-
-            <h3>Fresh Apple</h3>
-
-            <p class="price">$2.99 / kg</p>
-
-            <p>Fresh and healthy red apples.</p>
-
-            <button onclick="addToCart('Fresh Apple',2.99)">
-                Add To Cart
-            </button>
-
-        </div>
-
-
-
-        <div class="product-card" data-category="vegetable">
-
-            <img src="images/vegetables.jpg" alt="Vegetables">
-
-            <h3>Fresh Vegetables</h3>
-
-            <p class="price">$3.49 / kg</p>
-
-            <p>Organic farm vegetables.</p>
-
-            <button onclick="addToCart('Fresh Vegetables',3.49)">
-                Add To Cart
-            </button>
-
-        </div>
-
-
-
-        <div class="product-card" data-category="dairy">
-
-            <img src="images/milk.jpg" alt="Milk">
-
-            <h3>Fresh Milk</h3>
-
-            <p class="price">$1.99 / litre</p>
-
-            <p>Pure and healthy dairy milk.</p>
-
-            <button onclick="addToCart('Fresh Milk',1.99)">
-                Add To Cart
-            </button>
-
-        </div>
-
-
-
-        <div class="product-card" data-category="grocery">
-
-            <img src="images/rice.jpg" alt="Rice">
-
-            <h3>Premium Rice</h3>
-
-            <p class="price">$4.99 / kg</p>
-
-            <p>High quality rice.</p>
-
-            <button onclick="addToCart('Premium Rice',4.99)">
-                Add To Cart
-            </button>
-
-        </div>
-
-
-    </section>
-
-
-
-<script src="js/products.js"></script>
-
+<script src="script.js"></script>
+<script src="products.js"></script>
 </body>
 </html>

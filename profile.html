@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Development Centre | My Profile</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav>
+    <a href="index.html" class="logo">
+        <i class="fa-solid fa-store"></i>
+        <span>Market Development<br><small>Centre</small></span>
+    </a>
+
+    <ul>
+        <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a href="products.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
+        <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
+        <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
+        <li><a href="login.html" class="active"><i class="fa-solid fa-user"></i> Login</a></li>
+    </ul>
+
+    <div class="icons">
+        <a href="cart.html">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cartCount">0</span>
+        </a>
+        <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
+    </div>
+</nav>
+
+<!-- ================= PROFILE ================= -->
+<section class="profile-section">
+    <div class="profile-sidebar">
+        <div class="avatar">
+            <i class="fa-solid fa-circle-user"></i>
+        </div>
+        <h3 id="userName">Guest User</h3>
+        <p id="userRole">Visitor</p>
+        <div class="profile-menu">
+            <button onclick="showSection('overview')"><i class="fa-solid fa-house"></i> Overview</button>
+            <button onclick="showSection('orders')"><i class="fa-solid fa-box"></i> My Orders</button>
+            <button onclick="showSection('listings')"><i class="fa-solid fa-tag"></i> My Listings (Sell)</button>
+            <button onclick="showSection('settings')"><i class="fa-solid fa-gear"></i> Settings</button>
+            <button onclick="logout()" style="color:#e53935;"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        </div>
+    </div>
+
+    <div class="profile-content">
+        <!-- Overview -->
+        <div id="overview">
+            <h2>📊 My Overview</h2>
+            <div class="info-row"><span>Name</span><span id="ovName">Guest User</span></div>
+            <div class="info-row"><span>Email</span><span id="ovEmail">Not logged in</span></div>
+            <div class="info-row"><span>Phone</span><span id="ovPhone">-</span></div>
+            <div class="info-row"><span>Total Orders</span><span id="ovOrders">0</span></div>
+            <div class="info-row"><span>Total Listings</span><span id="ovListings">0</span></div>
+        </div>
+
+        <!-- Orders -->
+        <div id="orders" style="display:none;">
+            <h2>📦 My Orders</h2>
+            <div id="ordersList"></div>
+        </div>
+
+        <!-- Listings -->
+        <div id="listings" style="display:none;">
+            <h2>💰 My Product Listings</h2>
+            <div id="listingsList"></div>
+        </div>
+
+        <!-- Settings -->
+        <div id="settings" style="display:none;">
+            <h2>⚙️ Settings</h2>
+            <p style="color:#777;margin-bottom:20px;">Update your profile information</p>
+            <label for="upName" style="font-weight:600;color:#2e7d32;">Name</label>
+            <input type="text" id="upName" placeholder="Your name" style="width:100%;padding:14px;border:2px solid #ddd;border-radius:12px;font-size:16px;margin-bottom:15px;">
+            <label for="upPhone" style="font-weight:600;color:#2e7d32;">Phone</label>
+            <input type="tel" id="upPhone" placeholder="Your phone" style="width:100%;padding:14px;border:2px solid #ddd;border-radius:12px;font-size:16px;margin-bottom:15px;">
+            <button class="auth-btn" onclick="saveSettings()">Save Changes</button>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+    <div class="footer-logo">
+        <i class="fa-solid fa-store"></i> Market Development Centre
+    </div>
+    <p>Buy &amp; Sell Fresh Products for Everyone</p>
+    <p>© 2026 Market Development Centre. All Rights Reserved.</p>
+    <div class="social">
+        <i class="fa-brands fa-facebook"></i>
+        <i class="fa-brands fa-instagram"></i>
+        <i class="fa-brands fa-twitter"></i>
+        <i class="fa-brands fa-whatsapp"></i>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+// =============================
+// Load User Data
+// =============================
+let user=JSON.parse(localStorage.getItem("user")) || null;
+let orders=JSON.parse(localStorage.getItem("orders")) || [];
+let myProducts=JSON.parse(localStorage.getItem("myProducts")) || [];
+
+function loadProfile(){
+    if(user){
+        document.getElementById("userName").innerText=user.name||"Customer";
+        document.getElementById("userRole").innerText=user.role||"Buyer";
+        document.getElementById("ovName").innerText=user.name||"Customer";
+        document.getElementById("ovEmail").innerText=user.email||"N/A";
+        document.getElementById("ovPhone").innerText=user.phone||"-";
+        document.getElementById("upName").value=user.name||"";
+        document.getElementById("upPhone").value=user.phone||"";
+    }
+    document.getElementById("ovOrders").innerText=orders.length;
+    document.getElementById("ovListings").innerText=myProducts.length;
+
+    // Orders list
+    let ordersList=document.getElementById("ordersList");
+    if(orders.length===0){
+        ordersList.innerHTML='<p style="color:#777;">No orders yet.</p>';
+    }else{
+        ordersList.innerHTML="";
+        orders.forEach((o,i)=>{
+            ordersList.innerHTML += `
+            <div class="cart-item" style="flex-direction:column;align-items:flex-start;">
+                <h3>Order #${i+1} - ${o.date}</h3>
+                <p>📍 ${o.address}</p>
+                <p>💰 Total: $${o.total}</p>
+                <p>💳 ${o.payment}</p>
+            </div>`;
+        });
+    }
+
+    // Listings list
+    let listingsList=document.getElementById("listingsList");
+    if(myProducts.length===0){
+        listingsList.innerHTML='<p style="color:#777;">No products listed yet.</p>';
+    }else{
+        listingsList.innerHTML="";
+        myProducts.forEach((p,i)=>{
+            listingsList.innerHTML += `
+            <div class="cart-item" style="flex-direction:column;align-items:flex-start;">
+                <h3>${p.name}</h3>
+                <p>💰 $${p.price} | 📦 ${p.quantity}</p>
+            </div>`;
+        });
+    }
+}
+
+// =============================
+// Show Section
+// =============================
+function showSection(section){
+    ['overview','orders','listings','settings'].forEach(s=>{
+        document.getElementById(s).style.display = s===section ? "block" : "none";
+    });
+}
+
+// =============================
+// Save Settings
+// =============================
+function saveSettings(){
+    let name=document.getElementById("upName").value;
+    let phone=document.getElementById("upPhone").value;
+    if(user && name){
+        user.name=name;
+        user.phone=phone;
+        localStorage.setItem("user",JSON.stringify(user));
+        loadProfile();
+        showToast("Profile updated ✅");
+    }else{
+        showToast("Please login first");
+    }
+}
+
+// =============================
+// Logout
+// =============================
+function logout(){
+    localStorage.removeItem("user");
+    showToast("Logged out successfully");
+    setTimeout(()=>{window.location.href="index.html";},1200);
+}
+
+loadProfile();
+updateCartCount();
+</script>
+</body>
+</html>

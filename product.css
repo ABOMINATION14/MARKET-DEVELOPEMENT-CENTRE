@@ -1,14 +1,15 @@
-/* Products Page Styling */
+/* ============================================
+   MARKET DEVELOPMENT CENTRE - Product Page CSS
+   ============================================ */
 
+/* Products Page Styling */
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
     background: #f5fff5;
 }
 
-
 /* Navigation Header */
-
 header {
     background: #2e8b57;
     color: white;
@@ -18,12 +19,10 @@ header {
     align-items: center;
 }
 
-
 .logo {
     font-size: 28px;
     font-weight: bold;
 }
-
 
 nav a {
     color: white;
@@ -32,240 +31,133 @@ nav a {
     font-size: 17px;
 }
 
-
 nav a:hover {
     color: #ffe600;
 }
 
-
-
 /* Hero Section */
-
 .hero {
     text-align: center;
     padding: 40px;
-    background: linear-gradient(
-        120deg,
-        #4caf50,
-        #8bc34a
-    );
+    background: linear-gradient(120deg, #4caf50, #8bc34a);
     color: white;
 }
-
 
 .hero h1 {
     font-size: 36px;
     margin-bottom: 10px;
 }
 
-
 .hero p {
     font-size: 18px;
 }
 
-
-
 /* Search Section */
-
 .search-section {
-
     display: flex;
     justify-content: center;
     gap: 20px;
     padding: 30px;
-
+    flex-wrap: wrap;
 }
-
 
 .search-section input,
 .search-section select {
-
     padding: 12px;
     width: 250px;
     border-radius: 20px;
     border: 2px solid #4caf50;
     font-size: 16px;
-
 }
-
 
 .search-section input:focus,
 .search-section select:focus {
-
     outline: none;
     border-color: #ff9800;
-
 }
-
-
 
 /* Product Container */
-
 .products-container {
-
     display: grid;
-
-    grid-template-columns:
-    repeat(auto-fit,minmax(250px,1fr));
-
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 30px;
-
     padding: 40px;
-
 }
-
-
 
 /* Product Card */
-
 .product-card {
-
-    background:white;
-
-    border-radius:20px;
-
-    padding:20px;
-
-    text-align:center;
-
-    box-shadow:
-    0px 5px 15px rgba(0,0,0,0.15);
-
-    transition:0.3s;
-
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0px 5px 15px rgba(0,0,0,0.15);
+    transition: 0.3s;
 }
-
-
 
 .product-card:hover {
-
-    transform:translateY(-10px);
-
-    box-shadow:
-    0px 10px 25px rgba(0,0,0,0.25);
-
+    transform: translateY(-10px);
+    box-shadow: 0px 10px 25px rgba(0,0,0,0.25);
 }
-
-
 
 /* Product Image */
-
 .product-card img {
-
-    width:180px;
-
-    height:180px;
-
-    object-fit:cover;
-
-    border-radius:15px;
-
+    width: 180px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 15px;
 }
-
-
 
 /* Product Name */
-
 .product-card h3 {
-
-    color:#2e8b57;
-
-    font-size:22px;
-
+    color: #2e8b57;
+    font-size: 22px;
 }
-
-
 
 /* Description */
-
 .product-card p {
-
-    color:#555;
-
+    color: #555;
 }
-
-
 
 /* Price */
-
 .price {
-
-    font-size:20px;
-
-    font-weight:bold;
-
-    color:#ff5722 !important;
-
+    font-size: 20px;
+    font-weight: bold;
+    color: #ff5722 !important;
 }
-
-
 
 /* Button */
-
 .product-card button {
-
-    background:#2e8b57;
-
-    color:white;
-
-    border:none;
-
-    padding:12px 25px;
-
-    border-radius:25px;
-
-    cursor:pointer;
-
-    font-size:16px;
-
-    margin-top:10px;
-
+    background: #2e8b57;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
 }
-
-
 
 .product-card button:hover {
-
-    background:#ff9800;
-
-    transform:scale(1.05);
-
+    background: #ff9800;
+    transform: scale(1.05);
 }
 
-
-
 /* Mobile Responsive */
-
-@media(max-width:700px)
-{
-
+@media (max-width: 700px) {
     header {
-
-        flex-direction:column;
-
+        flex-direction: column;
     }
-
 
     nav {
-
-        margin-top:15px;
-
+        margin-top: 15px;
     }
-
 
     .search-section {
-
-        flex-direction:column;
-
-        align-items:center;
-
+        flex-direction: column;
+        align-items: center;
     }
-
 
     .hero h1 {
-
-        font-size:28px;
-
+        font-size: 28px;
     }
-
 }

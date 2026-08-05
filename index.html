@@ -3,382 +3,220 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>FreshMart | Online Grocery Store</title>
-
+<title>Market Development Centre | Buy &amp; Sell</title>
 <link rel="stylesheet" href="style.css">
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
 </head>
 
 <body>
 
+<!-- ================= TOP BAR ================= -->
+<div class="topbar">
+    <i class="fa-solid fa-headset"></i> Need Help? Call Us: +91 98765 43210 &nbsp;|&nbsp; Free Delivery on Orders above $50
+</div>
+
 <!-- ================= NAVBAR ================= -->
-
 <nav>
+    <a href="index.html" class="logo">
+        <i class="fa-solid fa-store"></i>
+        <span>Market Development<br><small>Centre</small></span>
+    </a>
 
-<div class="logo">
-<i class="fa-solid fa-cart-shopping"></i>
-FreshMart
-</div>
+    <ul>
+        <li><a href="index.html" class="active"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a href="products.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
+        <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
+        <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
+        <li><a href="login.html"><i class="fa-solid fa-user"></i> Login</a></li>
+    </ul>
 
-<ul>
-
-<li><a href="index.html">Home</a></li>
-<li><a href="products.html">Products</a></li>
-<li><a href="cart.html">Cart</a></li>
-<li><a href="login.html">Login</a></li>
-
-</ul>
-
-<div class="icons">
-
-<i class="fa-solid fa-heart"></i>
-
-<a href="cart.html">
-<i class="fa-solid fa-cart-shopping"></i>
-<span id="cartCount">0</span>
-</a>
-
-</div>
-
+    <div class="icons">
+        <a href="cart.html">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cartCount">0</span>
+        </a>
+        <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
+    </div>
 </nav>
 
 <!-- ================= HERO ================= -->
-
 <section class="hero">
-
-<div class="hero-text">
-
-<h1>Fresh Groceries Delivered To Your Door</h1>
-
-<p>
-
-Buy Fresh Fruits, Vegetables, Dairy Products,
-Snacks and Drinks at affordable prices.
-
-</p>
-
-<a href="products.html">
-
-<button>
-
-Shop Now
-
-</button>
-
-</a>
-
-</div>
-
-<div class="hero-image">
-
-<img src="images/banner.png">
-
-</div>
-
+    <div class="hero-text">
+        <h1>Buy &amp; Sell Fresh Products Easily</h1>
+        <p>
+            <i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Simple &amp; Easy to Use for Everyone <br>
+            <i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Buy Fresh Fruits &amp; Vegetables <br>
+            <i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Sell Your Products Directly to Customers
+        </p>
+        <div class="hero-buttons">
+            <a href="products.html" class="btn-buy">
+                <i class="fa-solid fa-cart-plus"></i> Buy Products
+            </a>
+            <a href="sell.html" class="btn-sell">
+                <i class="fa-solid fa-tag"></i> Sell Products
+            </a>
+        </div>
+    </div>
+    <div class="hero-image">
+        <img src="images/banner.svg" alt="Fresh Market">
+    </div>
 </section>
 
 <!-- ================= SEARCH ================= -->
-
 <section class="search">
-
-<h2>Search Products</h2>
-
-<input
-type="text"
-placeholder="Search products..."
-id="searchBox"
-onkeyup="searchProduct()">
-
+    <h2>🔍 Search Products</h2>
+    <p>Type the product name or press the mic and speak</p>
+    <div class="search-box">
+        <input type="text" placeholder="Search products..." id="searchBox" onkeyup="searchProduct()">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <button class="voice-btn" onclick="voiceSearch()" title="Search by voice">
+            <i class="fa-solid fa-microphone"></i>
+        </button>
+    </div>
 </section>
 
 <!-- ================= CATEGORIES ================= -->
-
 <section class="categories">
-
-<h2>Categories</h2>
-
-<div class="category-box">
-
-<div class="category">
-
-<img src="images/vegetables.png">
-
-<h3>Vegetables</h3>
-
-</div>
-
-<div class="category">
-
-<img src="images/fruits.png">
-
-<h3>Fruits</h3>
-
-</div>
-
-<div class="category">
-
-<img src="images/dairy.png">
-
-<h3>Dairy</h3>
-
-</div>
-
-<div class="category">
-
-<img src="images/snacks.png">
-
-<h3>Snacks</h3>
-
-</div>
-
-<div class="category">
-
-<img src="images/drinks.png">
-
-<h3>Drinks</h3>
-
-</div>
-
-</div>
-
+    <h2 class="section-title">Browse by Category</h2>
+    <p class="section-sub">Click a category to see products</p>
+    <div class="category-box">
+        <div class="category" onclick="window.location='products.html?cat=vegetable'">
+            <img src="images/vegetables.svg" alt="Vegetables">
+            <h3>Vegetables</h3>
+        </div>
+        <div class="category" onclick="window.location='products.html?cat=fruit'">
+            <img src="images/fruits.svg" alt="Fruits">
+            <h3>Fruits</h3>
+        </div>
+        <div class="category" onclick="window.location='products.html?cat=dairy'">
+            <img src="images/dairy.svg" alt="Dairy">
+            <h3>Dairy</h3>
+        </div>
+        <div class="category" onclick="window.location='products.html?cat=grocery'">
+            <img src="images/snacks.svg" alt="Groceries">
+            <h3>Groceries</h3>
+        </div>
+        <div class="category" onclick="window.location='products.html?cat=drinks'">
+            <img src="images/drinks.svg" alt="Drinks">
+            <h3>Drinks</h3>
+        </div>
+    </div>
 </section>
 
 <!-- ================= FEATURED PRODUCTS ================= -->
-
 <section class="products">
-
-<h2>Featured Products</h2>
-
-<div class="product-grid">
-
-<div class="card">
-
-<img src="images/tomato.png">
-
-<h3>Tomato</h3>
-
-<p>$2.00 / kg</p>
-
-<p class="rating">
-
-⭐⭐⭐⭐⭐
-
-</p>
-
-<button onclick="addCart('Tomato',2)">
-
-Add To Cart
-
-</button>
-
-</div>
-
-<div class="card">
-
-<img src="images/potato.png">
-
-<h3>Potato</h3>
-
-<p>$1.50 / kg</p>
-
-<p class="rating">
-
-⭐⭐⭐⭐⭐
-
-</p>
-
-<button onclick="addCart('Potato',1.5)">
-
-Add To Cart
-
-</button>
-
-</div>
-
-<div class="card">
-
-<img src="images/carrot.png">
-
-<h3>Carrot</h3>
-
-<p>$3.00 / kg</p>
-
-<p class="rating">
-
-⭐⭐⭐⭐☆
-
-</p>
-
-<button onclick="addCart('Carrot',3)">
-
-Add To Cart
-
-</button>
-
-</div>
-
-<div class="card">
-
-<img src="images/onion.png">
-
-<h3>Onion</h3>
-
-<p>$2.20 / kg</p>
-
-<p class="rating">
-
-⭐⭐⭐⭐⭐
-
-</p>
-
-<button onclick="addCart('Onion',2.2)">
-
-Add To Cart
-
-</button>
-
-</div>
-
-<div class="card">
-
-<img src="images/apple.png">
-
-<h3>Apple</h3>
-
-<p>$5.00 / kg</p>
-
-<p class="rating">
-
-⭐⭐⭐⭐⭐
-
-</p>
-
-<button onclick="addCart('Apple',5)">
-
-Add To Cart
-
-</button>
-
-</div>
-
-<div class="card">
-
-<img src="images/banana.png">
-
-<h3>Banana</h3>
-
-<p>$2.50 / dozen</p>
-
-<p class="rating">
-
-⭐⭐⭐⭐☆
-
-</p>
-
-<button onclick="addCart('Banana',2.5)">
-
-Add To Cart
-
-</button>
-
-</div>
-
-</div>
-
+    <h2 class="section-title">⭐ Featured Products</h2>
+    <p class="section-sub">Fresh products for you</p>
+    <div class="product-grid" id="featuredGrid">
+        <!-- Products loaded by JS -->
+    </div>
 </section>
 
-<!-- ================= OFFERS ================= -->
-
+<!-- ================= OFFER ================= -->
 <section class="offer">
+    <h2>🎉 Today's Special Offer</h2>
+    <h1>20% OFF</h1>
+    <p>On all Fresh Vegetables - Limited Time!</p>
+    <button onclick="offer()">Grab Offer</button>
+</section>
 
-<h2>Today's Special Offer</h2>
+<!-- ================= HOW IT WORKS ================= -->
+<section class="how">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-sub">Simple steps for everyone</p>
+    <div class="how-steps">
+        <div class="step">
+            <span class="num">1</span>
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <h3>Search</h3>
+            <p>Find the product you want using search or voice</p>
+        </div>
+        <div class="step">
+            <span class="num">2</span>
+            <i class="fa-solid fa-cart-plus"></i>
+            <h3>Add to Cart</h3>
+            <p>Press the big "Add to Cart" button</p>
+        </div>
+        <div class="step">
+            <span class="num">3</span>
+            <i class="fa-solid fa-truck"></i>
+            <h3>Get Delivery</h3>
+            <p>We deliver fresh to your door</p>
+        </div>
+    </div>
+</section>
 
-<h1>20% OFF</h1>
-
-<p>
-
-On all Fresh Vegetables
-
-</p>
-
-<button>
-
-Grab Offer
-
-</button>
-
+<!-- ================= SELL SECTION ================= -->
+<section class="sell-section">
+    <h2 class="section-title">Want to Sell?</h2>
+    <p class="section-sub">Farmers and sellers can earn more with us</p>
+    <div class="sell-box">
+        <div class="sell-card">
+            <i class="fa-solid fa-tag"></i>
+            <h3>List Your Product</h3>
+            <p>Add your fruits, vegetables or goods for free</p>
+            <button class="sell-btn" onclick="window.location='sell.html'">Start Selling</button>
+        </div>
+        <div class="sell-card">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+            <h3>Get Fair Price</h3>
+            <p>We help you get the best price for your produce</p>
+            <button class="sell-btn" onclick="window.location='sell.html'">Learn More</button>
+        </div>
+        <div class="sell-card">
+            <i class="fa-solid fa-users"></i>
+            <h3>Reach More Customers</h3>
+            <p>Sell directly to thousands of customers</p>
+            <button class="sell-btn" onclick="window.location='sell.html'">Join Now</button>
+        </div>
+    </div>
 </section>
 
 <!-- ================= WHY CHOOSE US ================= -->
-
 <section class="why">
-
-<h2>Why Choose FreshMart?</h2>
-
-<div class="why-box">
-
-<div>
-
-<i class="fa-solid fa-truck-fast"></i>
-
-<h3>Fast Delivery</h3>
-
-<p>Delivered within 30 Minutes.</p>
-
-</div>
-
-<div>
-
-<i class="fa-solid fa-leaf"></i>
-
-<h3>Fresh Products</h3>
-
-<p>Directly from Farms.</p>
-
-</div>
-
-<div>
-
-<i class="fa-solid fa-wallet"></i>
-
-<h3>Affordable Price</h3>
-
-<p>Lowest Price Guaranteed.</p>
-
-</div>
-
-</div>
-
+    <h2 class="section-title">Why Choose Market Development Centre?</h2>
+    <p class="section-sub">Your trusted marketplace</p>
+    <div class="why-box">
+        <div>
+            <i class="fa-solid fa-face-smile"></i>
+            <h3>Easy to Use</h3>
+            <p>Simple buttons and big text for everyone</p>
+        </div>
+        <div>
+            <i class="fa-solid fa-truck-fast"></i>
+            <h3>Fast Delivery</h3>
+            <p>Delivered within 30 minutes</p>
+        </div>
+        <div>
+            <i class="fa-solid fa-leaf"></i>
+            <h3>Fresh Products</h3>
+            <p>Directly from farms</p>
+        </div>
+        <div>
+            <i class="fa-solid fa-wallet"></i>
+            <h3>Affordable Price</h3>
+            <p>Lowest price guaranteed</p>
+        </div>
+    </div>
 </section>
 
 <!-- ================= FOOTER ================= -->
-
 <footer>
-
-<h2>FreshMart</h2>
-
-<p>
-
-Fresh Grocery Shopping Website
-
-</p>
-
-<p>
-
-© 2026 FreshMart. All Rights Reserved.
-
-</p>
-
+    <div class="footer-logo">
+        <i class="fa-solid fa-store"></i> Market Development Centre
+    </div>
+    <p>Buy &amp; Sell Fresh Products for Everyone</p>
+    <p>© 2026 Market Development Centre. All Rights Reserved.</p>
+    <div class="social">
+        <i class="fa-brands fa-facebook"></i>
+        <i class="fa-brands fa-instagram"></i>
+        <i class="fa-brands fa-twitter"></i>
+        <i class="fa-brands fa-whatsapp"></i>
+    </div>
 </footer>
 
-<script src="app.js"></script>
-
+<script src="script.js"></script>
 </body>
 </html>

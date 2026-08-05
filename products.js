@@ -1,219 +1,100 @@
-// FreshMart Products JavaScript
+// ============================================
+// MARKET DEVELOPMENT CENTRE - Products Page
+// ============================================
 
+// =============================
+// Display All Products
+// =============================
+function loadAllProducts(){
+    let container=document.getElementById("productList");
+    if(!container) return;
 
-// Add product to cart
+    container.innerHTML="";
 
-function addToCart(name, price) {
-
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-
-    let product = {
-
-        name: name,
-        price: price,
-        quantity: 1
-
-    };
-
-
-    cart.push(product);
-
-
-    localStorage.setItem(
-        "cart",
-        JSON.stringify(cart)
-    );
-
-
-    alert(name + " added to cart 🛒");
-
+    products.forEach(p=>{
+        let stars="⭐".repeat(p.rating) + "☆".repeat(5-p.rating);
+        container.innerHTML += `
+        <div class="card" data-category="${p.category}" data-name="${p.name.toLowerCase()}">
+            <img src="${p.image}" alt="${p.name}">
+            <h3>${p.name}</h3>
+            <p class="price">$${p.price.toFixed(2)}</p>
+            <p class="desc">${p.desc}</p>
+            <p class="rating">${stars}</p>
+            <button onclick="addCart('${p.name}',${p.price})">
+                <i class="fa-solid fa-cart-plus"></i> Add To Cart
+            </button>
+        </div>`;
+    });
 }
 
+// =============================
+// Filter by Category
+// =============================
+let currentCategory = "all";
+let currentSearch = "";
 
-
-
-// Search Products
-
-function searchProducts() {
-
-
-    let searchValue = document
-        .getElementById("searchBox")
-        .value
-        .toLowerCase();
-
-
-
-    let products = document
-        .getElementsByClassName("product-card");
-
-
-
-    for(let i = 0; i < products.length; i++) {
-
-
-        let productName = products[i]
-            .getElementsByTagName("h3")[0]
-            .innerText
-            .toLowerCase();
-
-
-
-        if(productName.includes(searchValue)) {
-
-            products[i].style.display = "block";
-
-        }
-
-        else {
-
-            products[i].style.display = "none";
-
-        }
-
-    }
-
+function filterCategory(){
+    let select=document.getElementById("category");
+    currentCategory = select ? select.value : "all";
+    applyFilters();
 }
 
+// =============================
+// Apply both search and filter
+// =============================
+function applyFilters(){
+    let cards=document.querySelectorAll("#productList .card");
+    let emptyMsg=document.getElementById("noResults");
+    let visibleCount=0;
 
+    cards.forEach(card=>{
+        let cat=card.getAttribute("data-category");
+        let name=card.getAttribute("data-name");
 
+        let catMatch = currentCategory==="all" || cat===currentCategory;
+        let searchMatch = !currentSearch || name.includes(currentSearch);
 
-
-// Filter Products by Category
-
-function filterCategory() {
-
-
-    let selectedCategory =
-        document.getElementById("category").value;
-
-
-
-    let products =
-        document.getElementsByClassName("product-card");
-
-
-
-    for(let i = 0; i < products.length; i++) {
-
-
-        let category =
-            products[i].getAttribute("data-category");
-
-
-
-        if(selectedCategory === "all" ||
-           category === selectedCategory) {
-
-
-            products[i].style.display = "block";
-
+        if(catMatch && searchMatch){
+            card.style.display="block";
+            visibleCount++;
+        }else{
+            card.style.display="none";
         }
+    });
 
-        else {
-
-
-            products[i].style.display = "none";
-
-        }
-
+    if(emptyMsg){
+        emptyMsg.style.display = visibleCount===0 ? "block" : "none";
     }
-
 }
 
-
-
-
-
-// Load Products from Backend API
-
-async function loadProducts() {
-
-
-    try {
-
-
-        let response = await fetch(
-            "http://localhost:8080/api/products"
-        );
-
-
-        let products =
-            await response.json();
-
-
-
-        let container =
-            document.getElementById("productList");
-
-
-
-        container.innerHTML = "";
-
-
-
-        products.forEach(product => {
-
-
-            container.innerHTML += `
-
-            <div class="product-card"
-            data-category="${product.category}">
-
-
-                <img src="${product.image}"
-                alt="${product.name}">
-
-
-                <h3>${product.name}</h3>
-
-
-                <p class="price">
-                $${product.price}
-                </p>
-
-
-                <p>
-                ${product.description}
-                </p>
-
-
-                <button onclick="
-                addToCart('${product.name}',
-                ${product.price})">
-
-                Add To Cart
-
-                </button>
-
-
-            </div>
-
-            `;
-
-
-        });
-
-
+// Override searchProduct for products page
+function searchProduct(){
+    let input=document.getElementById("searchBox");
+    if(input){
+        currentSearch = input.value.trim().toLowerCase();
+        applyFilters();
     }
-
-    catch(error) {
-
-
-        console.log(
-            "Backend not connected. Showing default products."
-        );
-
-
-    }
-
 }
 
+// =============================
+// Load category from URL
+// =============================
+function loadCategoryFromURL(){
+    let params=new URLSearchParams(window.location.search);
+    let cat=params.get("cat");
+    if(cat){
+        currentCategory=cat;
+        let select=document.getElementById("category");
+        if(select){
+            select.value=cat;
+        }
+        applyFilters();
+    }
+}
 
-
-// Run when page opens
-
-// Uncomment this after Spring Boot backend is ready
-
-// window.onload = loadProducts;
+// =============================
+// Initialize
+// =============================
+loadAllProducts();
+loadCategoryFromURL();
+updateCartCount();

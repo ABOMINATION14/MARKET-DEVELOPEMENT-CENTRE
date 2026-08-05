@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Development Centre | Order Success</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav>
+    <a href="index.html" class="logo">
+        <i class="fa-solid fa-store"></i>
+        <span>Market Development<br><small>Centre</small></span>
+    </a>
+
+    <ul>
+        <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a href="products.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
+        <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
+        <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
+        <li><a href="login.html"><i class="fa-solid fa-user"></i> Login</a></li>
+    </ul>
+
+    <div class="icons">
+        <a href="cart.html">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cartCount">0</span>
+        </a>
+        <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
+    </div>
+</nav>
+
+<!-- ================= SUCCESS ================= -->
+<section class="auth-section">
+    <div class="auth-box">
+        <div class="auth-icon" style="color:#4caf50;">
+            <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <h1>Order Placed Successfully! 🎉</h1>
+        <p>Thank you for shopping with us. Your order has been confirmed.</p>
+
+        <div class="cart-summary" style="position:static;margin:20px 0;">
+            <h2>✅ Order Details</h2>
+            <div class="summary-row">
+                <span>Order Number:</span>
+                <span style="color:#4caf50;font-weight:700;">#MDC-<span id="orderNum">0000</span></span>
+            </div>
+            <div class="summary-row">
+                <span>Total Paid:</span>
+                <span style="color:#ff9800;font-weight:700;">$<span id="orderTotal">0.00</span></span>
+            </div>
+            <div class="summary-row">
+                <span>Payment Method:</span>
+                <span id="orderPayment">Cash on Delivery</span>
+            </div>
+            <div class="summary-row">
+                <span>Status:</span>
+                <span style="color:#4caf50;">Confirmed ✅</span>
+            </div>
+        </div>
+
+        <p style="background:#f5f8f3;padding:15px;border-radius:12px;color:#555;">
+            <i class="fa-solid fa-truck-fast" style="color:#4caf50;"></i>
+            Your order will be delivered within <strong>30 minutes</strong>
+        </p>
+
+        <div style="display:flex;gap:10px;margin-top:20px;">
+            <a href="products.html" class="btn-buy" style="text-decoration:none;flex:1;justify-content:center;">
+                <i class="fa-solid fa-basket-shopping"></i> Continue Shopping
+            </a>
+            <a href="index.html" class="btn-sell" style="text-decoration:none;flex:1;justify-content:center;">
+                <i class="fa-solid fa-house"></i> Home
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+    <div class="footer-logo">
+        <i class="fa-solid fa-store"></i> Market Development Centre
+    </div>
+    <p>Buy &amp; Sell Fresh Products for Everyone</p>
+    <p>© 2026 Market Development Centre. All Rights Reserved.</p>
+    <div class="social">
+        <i class="fa-brands fa-facebook"></i>
+        <i class="fa-brands fa-instagram"></i>
+        <i class="fa-brands fa-twitter"></i>
+        <i class="fa-brands fa-whatsapp"></i>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+let params=new URLSearchParams(window.location.search);
+let total=params.get("total")||"0.00";
+document.getElementById("orderTotal").innerText=total;
+document.getElementById("orderNum").innerText=Math.floor(1000+Math.random()*9000);
+updateCartCount();
+</script>
+</body>
+</html>
