@@ -3,32 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Market Development Centre | Sign In / Sign Up</title>
+<title>Market Development Centre | Sign In</title>
 <link rel="stylesheet" href="style.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<!-- Google Identity Services (GIS) -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
 
 <!-- ================= NAVBAR ================= -->
 <nav>
-    <a href="login.html" class="logo">
+    <a href="index.html" class="logo">
         <i class="fa-solid fa-store"></i>
         <span>Market Development<br><small>Centre</small></span>
     </a>
 
     <ul>
-        <li><a href="login.html"><i class="fa-solid fa-house"></i> Home</a></li>
-        <li><a href="login.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
-        <li><a href="login.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
-        <li><a href="login.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
+        <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a href="products.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
+        <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
+        <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
         <li><a href="login.html" class="active"><i class="fa-solid fa-user"></i> Sign In</a></li>
     </ul>
 
     <div class="icons">
-        <a href="login.html">
+        <a href="cart.html" onclick="openCartDrawer();return false;">
             <i class="fa-solid fa-cart-shopping"></i>
             <span id="cartCount">0</span>
         </a>
@@ -38,30 +40,78 @@
 
 <!-- ================= AUTH SECTION ================= -->
 <section class="auth-section">
-
-    <!-- LOGIN / REGISTER TABS -->
-    <div class="auth-box">
+    <div class="auth-box" style="max-width:480px;">
 
         <div class="auth-icon">
-            <i class="fa-solid fa-user-lock"></i>
+            <i class="fa-solid fa-user-shield"></i>
         </div>
-        <h1 id="authTitle">Welcome Back 👋</h1>
-        <p id="authSub">Sign in to continue or create a new account</p>
+        <h1 id="authTitle">Welcome to Market DC</h1>
+        <p id="authSub">Select your account role and sign in</p>
 
-        <!-- Tab Buttons -->
-        <div class="auth-tabs">
-            <button class="tab-btn active" onclick="switchTab('login')" id="tabLogin" type="button">
-                <i class="fa-solid fa-right-to-bracket"></i> Sign In
+        <!-- Role Selector Pills -->
+        <label style="display:block;text-align:left;font-size:14px;font-weight:600;color:var(--darkgreen);margin-bottom:6px;">Select Account Role</label>
+        <div class="role-picker" id="rolePicker">
+            <div class="role-pill active" data-role="buyer" onclick="selectAuthRole('buyer', this)">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span>Buyer / Customer</span>
+            </div>
+            <div class="role-pill" data-role="seller" onclick="selectAuthRole('seller', this)">
+                <i class="fa-solid fa-store"></i>
+                <span>Seller / Farmer</span>
+            </div>
+            <div class="role-pill" data-role="delivery_partner" onclick="selectAuthRole('delivery_partner', this)">
+                <i class="fa-solid fa-motorcycle"></i>
+                <span>Delivery Partner</span>
+            </div>
+        </div>
+
+        <!-- Auth Method Tabs: OTP vs Password -->
+        <div class="auth-tabs" style="margin-bottom:18px;">
+            <button class="tab-btn active" id="tabOtp" onclick="switchAuthMethod('otp')" type="button">
+                <i class="fa-solid fa-mobile-screen"></i> Mobile OTP
             </button>
-            <button class="tab-btn" onclick="switchTab('register')" id="tabRegister" type="button">
-                <i class="fa-solid fa-user-plus"></i> Sign Up
+            <button class="tab-btn" id="tabPassword" onclick="switchAuthMethod('password')" type="button">
+                <i class="fa-solid fa-key"></i> Password
             </button>
         </div>
 
-        <!-- ======= SIGN IN FORM ======= -->
-        <form id="loginForm" onsubmit="return handleLogin(event)" style="display:block;">
-            <label for="loginEmail">Email</label>
-            <input type="email" id="loginEmail" placeholder="Enter your email" required>
+        <!-- ======= 1. DIRECT MOBILE OTP LOGIN ======= -->
+        <div id="otpSection" style="display:block;">
+            <div id="otpStep1">
+                <label for="otpPhone">Mobile Number</label>
+                <div style="position:relative;margin-bottom:18px;">
+                    <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:600;color:#555;">+91</span>
+                    <input type="tel" id="otpPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" style="padding-left:52px;margin-bottom:0;" required>
+                </div>
+
+                <button type="button" class="auth-btn" id="btnSendLoginOtp" onclick="sendLoginOTP()">
+                    <i class="fa-solid fa-paper-plane"></i> Send Verification OTP
+                </button>
+            </div>
+
+            <div id="otpStep2" style="display:none;">
+                <div style="background:#f0fdf4;padding:12px;border-radius:12px;margin-bottom:15px;text-align:left;font-size:14px;color:#166534;border:1px solid #bbf7d0;">
+                    <i class="fa-solid fa-circle-check"></i> OTP sent to <strong id="displayOtpPhone"></strong>
+                    <a href="#" onclick="resetOtpStep();return false;" style="float:right;color:#059669;font-weight:600;">Change</a>
+                </div>
+
+                <label for="loginOtpCode">Enter 6-Digit OTP</label>
+                <input type="text" id="loginOtpCode" placeholder="Enter 6-digit OTP code" maxlength="6" style="text-align:center;font-size:22px;letter-spacing:6px;font-weight:700;" required>
+
+                <button type="button" class="auth-btn" id="btnVerifyLoginOtp" onclick="verifyLoginOTP()">
+                    <i class="fa-solid fa-circle-check"></i> Verify &amp; Sign In
+                </button>
+
+                <p style="margin-top:12px;font-size:13px;color:#777;">
+                    Didn't receive code? <a href="#" onclick="sendLoginOTP();return false;" style="color:var(--orange);font-weight:600;">Resend OTP</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- ======= 2. EMAIL / PHONE + PASSWORD LOGIN ======= -->
+        <form id="passwordSection" onsubmit="return handlePasswordLogin(event)" style="display:none;">
+            <label for="loginIdentifier">Email or 10-Digit Mobile</label>
+            <input type="text" id="loginIdentifier" placeholder="Enter email or mobile" required>
 
             <label for="loginPassword">Password</label>
             <input type="password" id="loginPassword" placeholder="Enter your password" required>
@@ -70,69 +120,64 @@
                 <a href="#" onclick="showForgot();return false;">Forgot Password?</a>
             </div>
 
-            <button type="submit" class="auth-btn">
+            <button type="submit" class="auth-btn" id="btnPasswordLogin">
                 <i class="fa-solid fa-right-to-bracket"></i> Sign In
             </button>
         </form>
 
-        <!-- ======= SIGN UP FORM ======= -->
-        <form id="registerForm" onsubmit="return handleRegister(event)" style="display:none;">
-            <label for="regName">Full Name</label>
-            <input type="text" id="regName" placeholder="Enter your full name" required>
+        <!-- Divider -->
+        <div class="auth-divider">
+            <span>OR CONTINUE WITH</span>
+        </div>
 
-            <label for="regEmail">Email</label>
-            <input type="email" id="regEmail" placeholder="Enter your email" required>
-
-            <label for="regPhone">Mobile Number</label>
-            <input type="tel" id="regPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
-
-            <label for="regRole">I want to</label>
-            <select id="regRole">
-                <option value="buyer">Buy Products</option>
-                <option value="seller">Sell Products</option>
-                <option value="both">Both Buy &amp; Sell</option>
-            </select>
-
-            <label for="regPassword">Password</label>
-            <input type="password" id="regPassword" placeholder="Create a password" required>
-
-            <button type="submit" class="auth-btn" style="background:#ff9800;">
-                <i class="fa-solid fa-user-plus"></i> Create Account
-            </button>
-        </form>
+        <!-- ======= 3. GOOGLE SIGN-IN (GIS) ======= -->
+        <div class="google-auth-wrap">
+            <div id="g_id_onload"></div>
+            <div id="googleBtnContainer">
+                <button type="button" class="google-btn-custom" onclick="triggerGoogleAuth()">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.29 21.39 7.37 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.98 0 12s.46 3.84 1.26 5.42l4.02-3.15z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.29 2.61 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                    </svg>
+                    Continue with Google
+                </button>
+            </div>
+        </div>
 
         <!-- ======= FORGOT PASSWORD (OTP) ======= -->
-        <div id="forgotBox" style="display:none;">
-            <h1 style="font-size:24px;">🔐 Reset Password</h1>
-            <p>Enter your mobile number to receive an OTP</p>
+        <div id="forgotBox" style="display:none;margin-top:20px;text-align:left;">
+            <h3 style="font-size:18px;color:var(--darkgreen);margin-bottom:6px;">🔐 Reset Password</h3>
+            <p style="font-size:13px;color:#666;margin-bottom:15px;">Enter your registered mobile or email</p>
 
             <div id="forgotStep1">
-                <label for="forgotPhone">Mobile Number</label>
-                <input type="tel" id="forgotPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
-                <button type="button" class="auth-btn" style="background:var(--orange);" onclick="sendOTP()">
-                    <i class="fa-solid fa-paper-plane"></i> Send OTP
+                <label for="forgotPhone">Mobile or Email</label>
+                <input type="text" id="forgotPhone" placeholder="10-digit mobile or email" required>
+                <button type="button" class="auth-btn" style="background:var(--orange);" onclick="sendForgotOTP()">
+                    <i class="fa-solid fa-paper-plane"></i> Send Reset Code
                 </button>
             </div>
 
             <div id="forgotStep2" style="display:none;">
-                <label for="otpInput">Enter OTP</label>
-                <input type="text" id="otpInput" placeholder="6-digit OTP" maxlength="6" required>
+                <label for="forgotOtpCode">Enter OTP Code</label>
+                <input type="text" id="forgotOtpCode" placeholder="6-digit OTP" maxlength="6" required>
 
-                <label for="newPassword">New Password</label>
-                <input type="password" id="newPassword" placeholder="Enter new password" required>
+                <label for="forgotNewPass">New Password</label>
+                <input type="password" id="forgotNewPass" placeholder="Enter new password" required>
 
-                <button type="button" class="auth-btn" onclick="verifyOTP()">
-                    <i class="fa-solid fa-shield-halved"></i> Verify &amp; Reset
+                <button type="button" class="auth-btn" onclick="verifyForgotOTP()">
+                    <i class="fa-solid fa-shield-halved"></i> Verify &amp; Set New Password
                 </button>
             </div>
 
-            <p class="auth-switch">
-                <a href="#" onclick="hideForgot();return false;">← Back to Sign In</a>
+            <p style="margin-top:15px;text-align:center;font-size:14px;">
+                <a href="#" onclick="hideForgot();return false;" style="color:var(--green);font-weight:600;">← Back to Sign In</a>
             </p>
         </div>
 
         <p class="auth-switch" id="authSwitch">
-            Don't have an account? <a href="#" onclick="switchTab('register');return false;">Sign Up</a>
+            Need a new account? <a href="register.html">Sign Up as Buyer / Seller / Delivery</a>
         </p>
     </div>
 </section>
@@ -155,220 +200,331 @@
 <script src="script.js"></script>
 <script>
 // =============================
-// API Base URL
+// Auth Page Controller
 // =============================
-const API = 'http://localhost:8080';
+let selectedRole = 'buyer';
+let activeMethod = 'otp';
+let currentForgotTarget = '';
 
-// =============================
-// Switch between Sign In / Sign Up
-// =============================
-let currentOtpPhone = null;
-let currentOtpResetToken = null;
+function selectAuthRole(role, el) {
+    selectedRole = role;
+    document.querySelectorAll('.role-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+}
 
-function switchTab(tab){
-    if(tab==='login'){
-        document.getElementById('loginForm').style.display='block';
-        document.getElementById('registerForm').style.display='none';
-        document.getElementById('forgotBox').style.display='none';
-        document.getElementById('tabLogin').classList.add('active');
-        document.getElementById('tabRegister').classList.remove('active');
-        document.getElementById('authTitle').innerText='Welcome Back 👋';
-        document.getElementById('authSub').innerText='Sign in to continue buying & selling';
-        document.getElementById('authSwitch').style.display='block';
-    }else{
-        document.getElementById('loginForm').style.display='none';
-        document.getElementById('registerForm').style.display='block';
-        document.getElementById('forgotBox').style.display='none';
-        document.getElementById('tabRegister').classList.add('active');
-        document.getElementById('tabLogin').classList.remove('active');
-        document.getElementById('authTitle').innerText='Create Account 📝';
-        document.getElementById('authSub').innerText='Join us to buy & sell products';
-        document.getElementById('authSwitch').innerHTML="Already have an account? <a href='#' onclick=\"switchTab('login');return false;\">Sign In</a>";
+function switchAuthMethod(method) {
+    activeMethod = method;
+    const tabOtp = document.getElementById('tabOtp');
+    const tabPassword = document.getElementById('tabPassword');
+    const otpSection = document.getElementById('otpSection');
+    const passwordSection = document.getElementById('passwordSection');
+
+    if (method === 'otp') {
+        tabOtp.classList.add('active');
+        tabPassword.classList.remove('active');
+        otpSection.style.display = 'block';
+        passwordSection.style.display = 'none';
+    } else {
+        tabPassword.classList.add('active');
+        tabOtp.classList.remove('active');
+        passwordSection.style.display = 'block';
+        otpSection.style.display = 'none';
     }
 }
 
-// =============================
-// SIGN IN
-// =============================
-async function handleLogin(event){
-    event.preventDefault();
-    let email=document.getElementById('loginEmail').value.trim();
-    let password=document.getElementById('loginPassword').value;
-
-    if(!email || !password){
-        showToast('Please enter email and password');
-        return false;
-    }
-
-    let btn=event.target.querySelector('.auth-btn');
-    btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Signing in...';
-    btn.disabled=true;
-
-    try{
-        let res=await fetch(API+'/api/auth/login',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({email:email,password:password})
-        });
-        let data=await res.json();
-
-        if(data.success){
-            localStorage.setItem('token',data.token);
-            localStorage.setItem('user',JSON.stringify(data.user));
-            showToast('✅ Welcome back, '+data.user.name+'!');
-            setTimeout(()=>{window.location.href='index.html';},1200);
-        }else{
-            showToast('❌ '+data.message);
-        }
-    }catch(e){
-        showToast('❌ Cannot connect to server. Is the backend running?');
-    }
-
-    btn.innerHTML='<i class="fa-solid fa-right-to-bracket"></i> Sign In';
-    btn.disabled=false;
-    return false;
-}
-
-// =============================
-// SIGN UP
-// =============================
-async function handleRegister(event){
-    event.preventDefault();
-    let name=document.getElementById('regName').value.trim();
-    let email=document.getElementById('regEmail').value.trim();
-    let phone=document.getElementById('regPhone').value.trim();
-    let role=document.getElementById('regRole').value;
-    let password=document.getElementById('regPassword').value;
-
-    if(!name || !email || !phone || !password){
-        showToast('Please fill all fields');
-        return false;
-    }
-    if(!/^\d{10}$/.test(phone)){
-        showToast('Please enter a valid 10-digit mobile number');
-        return false;
-    }
-
-    let btn=event.target.querySelector('.auth-btn');
-    btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
-    btn.disabled=true;
-
-    try{
-        let res=await fetch(API+'/api/auth/register',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({name,email,phone,role,password})
-        });
-        let data=await res.json();
-
-        if(data.success){
-            localStorage.setItem('token',data.token);
-            localStorage.setItem('user',JSON.stringify(data.user));
-            showToast('🎉 Welcome, '+data.user.name+'! Account created.');
-            setTimeout(()=>{window.location.href='index.html';},1200);
-        }else{
-            showToast('❌ '+data.message);
-        }
-    }catch(e){
-        showToast('❌ Cannot connect to server. Is the backend running?');
-    }
-
-    btn.innerHTML='<i class="fa-solid fa-user-plus"></i> Create Account';
-    btn.disabled=false;
-    return false;
-}
-
-// =============================
-// FORGOT PASSWORD - OTP
-// =============================
-function showForgot(){
-    document.getElementById('loginForm').style.display='none';
-    document.getElementById('registerForm').style.display='none';
-    document.getElementById('forgotBox').style.display='block';
-    document.getElementById('authSwitch').style.display='none';
-    document.getElementById('authTitle').innerText='🔐 Reset Password';
-    document.getElementById('authSub').innerText='Enter your mobile number to receive OTP';
-}
-
-function hideForgot(){
-    document.getElementById('forgotBox').style.display='none';
-    document.getElementById('loginForm').style.display='block';
-    document.getElementById('authSwitch').style.display='block';
-    document.getElementById('authTitle').innerText='Welcome Back 👋';
-    document.getElementById('authSub').innerText='Sign in to continue buying & selling';
-}
-
-async function sendOTP(){
-    let phone=document.getElementById('forgotPhone').value.trim();
-    if(!/^\d{10}$/.test(phone)){
+// 1. Mobile OTP Login
+async function sendLoginOTP() {
+    const phone = document.getElementById('otpPhone').value.trim().replace(/\D/g, '');
+    if (phone.length !== 10) {
         showToast('Please enter a valid 10-digit mobile number');
         return;
     }
 
-    try{
-        let res=await fetch(API+'/api/auth/forgot',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({phone:phone})
-        });
-        let data=await res.json();
+    const btn = document.getElementById('btnSendLoginOtp');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending OTP...';
+    btn.disabled = true;
 
-        if(data.success){
-            currentOtpPhone=phone;
-            currentOtpResetToken=data.resetToken;
-            document.getElementById('forgotStep1').style.display='none';
-            document.getElementById('forgotStep2').style.display='block';
-            // Demo: show OTP for testing (in production this is sent via SMS)
-            showToast('📱 OTP sent to '+phone+'! (Demo OTP: '+data.otp+')');
-        }else{
-            showToast('❌ '+data.message);
+    try {
+        const res = await fetch(API + '/api/auth/send-login-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone: phone, role: selectedRole })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            document.getElementById('displayOtpPhone').innerText = '+91 ' + phone;
+            document.getElementById('otpStep1').style.display = 'none';
+            document.getElementById('otpStep2').style.display = 'block';
+            showToast(`📱 OTP Sent! Demo Code: [${data.otp || '123456'}]`);
+            // Pre-fill demo OTP for developer ease
+            document.getElementById('loginOtpCode').value = data.otp || '123456';
+        } else {
+            showToast('❌ ' + data.message);
         }
-    }catch(e){
-        showToast('❌ Cannot connect to server. Is the backend running?');
+    } catch (e) {
+        showToast('❌ Backend server connection failed');
+    }
+
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Verification OTP';
+    btn.disabled = false;
+}
+
+function resetOtpStep() {
+    document.getElementById('otpStep1').style.display = 'block';
+    document.getElementById('otpStep2').style.display = 'none';
+}
+
+async function verifyLoginOTP() {
+    const phone = document.getElementById('otpPhone').value.trim().replace(/\D/g, '');
+    const otp = document.getElementById('loginOtpCode').value.trim();
+
+    if (!otp || otp.length < 4) {
+        showToast('Please enter the 6-digit OTP code');
+        return;
+    }
+
+    const btn = document.getElementById('btnVerifyLoginOtp');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(API + '/api/auth/verify-login-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone: phone, otp: otp, role: selectedRole })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            showToast(`🎉 Signed in as ${data.user.name} (${data.user.role})`);
+            
+            setTimeout(() => {
+                if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
+                    window.location.href = 'profile.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }, 1000);
+        } else {
+            showToast('❌ ' + data.message);
+            btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Verify &amp; Sign In';
+            btn.disabled = false;
+        }
+    } catch (e) {
+        showToast('❌ Backend server connection error');
+        btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Verify &amp; Sign In';
+        btn.disabled = false;
     }
 }
 
-async function verifyOTP(){
-    let otp=document.getElementById('otpInput').value.trim();
-    let newPassword=document.getElementById('newPassword').value;
+// 2. Password Login
+async function handlePasswordLogin(event) {
+    event.preventDefault();
+    const identifier = document.getElementById('loginIdentifier').value.trim();
+    const password = document.getElementById('loginPassword').value;
 
-    if(!otp || !newPassword){
+    if (!identifier || !password) {
+        showToast('Please enter email/phone and password');
+        return false;
+    }
+
+    const btn = document.getElementById('btnPasswordLogin');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing in...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(API + '/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identifier: identifier, password: password, role: selectedRole })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            showToast(`✅ Welcome back, ${data.user.name}!`);
+            setTimeout(() => {
+                if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
+                    window.location.href = 'profile.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }, 1000);
+        } else {
+            showToast('❌ ' + data.message);
+            btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
+            btn.disabled = false;
+        }
+    } catch (e) {
+        showToast('❌ Could not connect to server');
+        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
+        btn.disabled = false;
+    }
+    return false;
+}
+
+// 3. Google Sign-In (GIS) Trigger
+async function triggerGoogleAuth() {
+    // If Google Client ID is configured and GIS loaded, trigger prompt
+    if (window.APP_CONFIG && window.APP_CONFIG.googleClientId && window.google) {
+        try {
+            google.accounts.id.initialize({
+                client_id: window.APP_CONFIG.googleClientId,
+                callback: handleGoogleCredentialResponse
+            });
+            google.accounts.id.prompt();
+            return;
+        } catch (e) {
+            console.warn('GIS error, falling back to instant demo auth:', e);
+        }
+    }
+
+    // Instant demo authentication for testing without live GCP credentials
+    showToast('🌐 Authenticating with Google...');
+    try {
+        const res = await fetch(API + '/api/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                credential: 'google-demo-token',
+                role: selectedRole,
+                email: 'user.demo@marketdc.in',
+                name: 'Verified Market User'
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            showToast(`🎉 Signed in with Google as ${data.user.name}!`);
+            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+        } else {
+            showToast('❌ ' + data.message);
+        }
+    } catch (e) {
+        showToast('❌ Google auth failed');
+    }
+}
+
+async function handleGoogleCredentialResponse(response) {
+    try {
+        const res = await fetch(API + '/api/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                credential: response.credential,
+                role: selectedRole
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            showToast(`🎉 Signed in with Google! Welcome ${data.user.name}`);
+            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+        } else {
+            showToast('❌ ' + data.message);
+        }
+    } catch (e) {
+        showToast('❌ Google authentication error');
+    }
+}
+
+// 4. Forgot Password Handlers
+function showForgot() {
+    document.getElementById('otpSection').style.display = 'none';
+    document.getElementById('passwordSection').style.display = 'none';
+    document.getElementById('forgotBox').style.display = 'block';
+    document.querySelector('.auth-tabs').style.display = 'none';
+    document.querySelector('.google-auth-wrap').style.display = 'none';
+    document.querySelector('.auth-divider').style.display = 'none';
+}
+
+function hideForgot() {
+    document.getElementById('forgotBox').style.display = 'none';
+    document.querySelector('.auth-tabs').style.display = 'flex';
+    document.querySelector('.google-auth-wrap').style.display = 'block';
+    document.querySelector('.auth-divider').style.display = 'flex';
+    switchAuthMethod(activeMethod);
+}
+
+async function sendForgotOTP() {
+    const input = document.getElementById('forgotPhone').value.trim();
+    if (!input) {
+        showToast('Please enter your mobile or email');
+        return;
+    }
+
+    try {
+        const res = await fetch(API + '/api/auth/forgot', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identifier: input })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            currentForgotTarget = input;
+            document.getElementById('forgotStep1').style.display = 'none';
+            document.getElementById('forgotStep2').style.display = 'block';
+            showToast(`📱 OTP Code Sent! (Demo OTP: ${data.otp})`);
+            document.getElementById('forgotOtpCode').value = data.otp || '';
+        } else {
+            showToast('❌ ' + data.message);
+        }
+    } catch (e) {
+        showToast('❌ Server error');
+    }
+}
+
+async function verifyForgotOTP() {
+    const otp = document.getElementById('forgotOtpCode').value.trim();
+    const newPass = document.getElementById('forgotNewPass').value;
+
+    if (!otp || !newPass) {
         showToast('Please enter OTP and new password');
         return;
     }
 
-    try{
-        let res=await fetch(API+'/api/auth/verify-otp',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({phone:currentOtpPhone,otp:otp,newPassword:newPassword})
+    try {
+        const res = await fetch(API + '/api/auth/verify-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                identifier: currentForgotTarget,
+                otp: otp,
+                newPassword: newPass
+            })
         });
-        let data=await res.json();
+        const data = await res.json();
 
-        if(data.success){
-            showToast('✅ Password reset successful! Please sign in.');
-            setTimeout(()=>{
+        if (data.success) {
+            showToast('✅ Password updated successfully! Please sign in.');
+            setTimeout(() => {
                 hideForgot();
-                switchTab('login');
-            },1500);
-        }else{
-            showToast('❌ '+data.message);
+                switchAuthMethod('password');
+            }, 1200);
+        } else {
+            showToast('❌ ' + data.message);
         }
-    }catch(e){
-        showToast('❌ Cannot connect to server.');
+    } catch (e) {
+        showToast('❌ Server error');
     }
 }
 
-// =============================
-// Check if already logged in
-// =============================
-let token=localStorage.getItem('token');
-if(token){
-    // Already logged in - redirect to home
-    window.location.href='index.html';
+// Redirect if already logged in
+if (isLoggedIn()) {
+    const user = getCurrentUser();
+    if (user && (user.role === 'delivery_partner' || user.role === 'seller')) {
+        window.location.href = 'profile.html';
+    } else {
+        window.location.href = 'index.html';
+    }
 }
-
-updateCartCount();
 </script>
 </body>
 </html>

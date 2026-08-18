@@ -1230,26 +1230,913 @@ footer .social i:hover{
         grid-template-columns:1fr;
     }
 
-    .cart-summary{
-        position:static;
+/* ==========================================================================
+   QUICK-COMMERCE MODERN UI & ANIMATION SYSTEM
+   ========================================================================== */
+
+/* Shimmer Skeleton Loaders */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.skeleton {
+    background: linear-gradient(90deg, #f0f3f0 25%, #e2e8e2 50%, #f0f3f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+}
+
+.skeleton-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.skeleton-img {
+    width: 100%;
+    height: 160px;
+    border-radius: 12px;
+}
+
+.skeleton-line {
+    height: 16px;
+    width: 80%;
+}
+
+.skeleton-line.short {
+    width: 40%;
+}
+
+.skeleton-btn {
+    height: 40px;
+    width: 100%;
+    border-radius: 20px;
+}
+
+/* Tactile Active Feedback */
+button:active, .btn-buy:active, .btn-sell:active, .auth-btn:active, .tab-btn:active, .pay-btn:active {
+    transform: scale(0.97) !important;
+}
+
+/* Badge Bump Animation */
+@keyframes badgePop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+}
+
+.badge-pop {
+    animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* ================= STICKY SEARCH & CATEGORY PILLS ================= */
+.sticky-category-wrapper {
+    position: sticky;
+    top: 68px;
+    z-index: 990;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+    padding: 10px 6%;
+}
+
+.sticky-search-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 800px;
+    margin: 0 auto 10px auto;
+}
+
+.sticky-search-input-wrap {
+    flex: 1;
+    position: relative;
+}
+
+.sticky-search-input-wrap input {
+    width: 100%;
+    padding: 12px 45px 12px 42px;
+    border-radius: 30px;
+    border: 2px solid #e0e7e0;
+    font-size: 15px;
+    outline: none;
+    transition: all 0.25s ease;
+    background: #f8faf8;
+}
+
+.sticky-search-input-wrap input:focus {
+    border-color: var(--green);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.12);
+}
+
+.sticky-search-input-wrap .search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    font-size: 16px;
+}
+
+.sticky-search-input-wrap .mic-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--green);
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 6px;
+}
+
+.category-chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 0;
+}
+
+.category-chips::-webkit-scrollbar {
+    display: none;
+}
+
+.chip-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 1px solid #dce5dc;
+    background: #fff;
+    color: #444;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chip-btn:hover {
+    border-color: var(--green);
+    color: var(--green);
+    background: #f4fbf4;
+}
+
+.chip-btn.active {
+    background: var(--green);
+    color: #fff;
+    border-color: var(--green);
+    box-shadow: 0 3px 10px rgba(46, 125, 50, 0.25);
+}
+
+/* ================= INTERACTIVE QUANTITY STEPPERS ================= */
+.card-action-wrap {
+    margin-top: 12px;
+    display: flex;
+    justify-content: center;
+}
+
+.card-add-btn {
+    padding: 10px 24px;
+    border: 2px solid var(--green);
+    background: #fff;
+    color: var(--green);
+    border-radius: 25px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 80%;
+    justify-content: center;
+}
+
+.card-add-btn:hover {
+    background: var(--green);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
+}
+
+.stepper-control {
+    display: inline-flex;
+    align-items: center;
+    background: var(--green);
+    color: #fff;
+    border-radius: 25px;
+    padding: 4px;
+    width: 80%;
+    justify-content: space-between;
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25);
+    animation: stepperScale 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes stepperScale {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.stepper-control button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: #fff;
+    color: var(--green);
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+    padding: 0;
+    margin: 0;
+}
+
+.stepper-control button:hover {
+    background: var(--yellow);
+    color: var(--darkgreen);
+}
+
+.stepper-control .stepper-count {
+    font-size: 16px;
+    font-weight: 700;
+    padding: 0 10px;
+    color: #fff;
+}
+
+/* ================= QUICK CART DRAWER ================= */
+.cart-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 2000;
+}
+
+.cart-drawer-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.cart-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 440px;
+    height: 100vh;
+    background: #fff;
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 2001;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -6px 0 30px rgba(0,0,0,0.18);
+}
+
+.cart-drawer.open {
+    transform: translateX(0);
+}
+
+.cart-drawer-header {
+    padding: 18px 20px;
+    background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cart-drawer-header h3 {
+    font-size: 19px;
+    color: var(--darkgreen);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cart-drawer-close {
+    background: #f3f4f6;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cart-drawer-close:hover {
+    background: #e5e7eb;
+    color: #111;
+}
+
+/* Delivery Progress Meter */
+.delivery-meter {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    padding: 10px 18px;
+    margin: 12px 18px 0 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    color: #166534;
+}
+
+.delivery-meter-bar {
+    height: 6px;
+    background: #dcfce7;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 6px;
+}
+
+.delivery-meter-fill {
+    height: 100%;
+    background: var(--lightgreen);
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+
+.cart-drawer-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px 18px;
+}
+
+.drawer-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 14px;
+    border: 1px solid #f0f2f0;
+    background: #fff;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    transition: transform 0.2s ease;
+}
+
+.drawer-item img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.drawer-item-info {
+    flex: 1;
+}
+
+.drawer-item-info h4 {
+    font-size: 15px;
+    color: #1f2937;
+    margin-bottom: 3px;
+}
+
+.drawer-item-info .drawer-item-price {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--orange);
+}
+
+.drawer-item-info .drawer-item-unit {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.drawer-stepper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f3f4f6;
+    border-radius: 20px;
+    padding: 3px 8px;
+}
+
+.drawer-stepper button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--darkgreen);
+    cursor: pointer;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.drawer-stepper span {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.drawer-item-del {
+    color: #9ca3af;
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 6px;
+}
+
+.drawer-item-del:hover {
+    color: var(--red);
+}
+
+.cart-drawer-footer {
+    padding: 18px 20px;
+    border-top: 1px solid #f0f0f0;
+    background: #fff;
+}
+
+.drawer-summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #4b5563;
+}
+
+.drawer-summary-row.total {
+    font-size: 17px;
+    font-weight: 700;
+    color: #111827;
+    border-top: 1px dashed #e5e7eb;
+    padding-top: 8px;
+    margin-top: 8px;
+}
+
+.drawer-checkout-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 30px;
+    background: var(--orange);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.drawer-checkout-btn:hover {
+    background: #e65100;
+}
+
+/* ================= 3-STEP CHECKOUT STEPPER ================= */
+.checkout-stepper-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.stepper-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+}
+
+.stepper-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+    transition: all 0.25s ease;
+}
+
+.stepper-step.active .stepper-circle {
+    background: var(--green);
+    color: #fff;
+    box-shadow: 0 0 0 5px rgba(46, 125, 50, 0.18);
+}
+
+.stepper-step.completed .stepper-circle {
+    background: var(--darkgreen);
+    color: #fff;
+}
+
+.stepper-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.stepper-step.active .stepper-label {
+    color: var(--darkgreen);
+}
+
+.stepper-progress-line {
+    position: absolute;
+    top: 19px;
+    left: 15%;
+    right: 15%;
+    height: 3px;
+    background: #e5e7eb;
+    z-index: 1;
+}
+
+.stepper-progress-fill {
+    height: 100%;
+    background: var(--green);
+    width: 0%;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Step container animation */
+.checkout-step-pane {
+    display: none;
+    animation: fadeInStep 0.25s ease forwards;
+}
+
+.checkout-step-pane.active {
+    display: block;
+}
+
+@keyframes fadeInStep {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ================= MULTI-ROLE PICKER & BADGES ================= */
+.role-picker {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.role-pill {
+    flex: 1;
+    padding: 12px 8px;
+    border: 2px solid #e0e7e0;
+    border-radius: 12px;
+    background: #f9fbf9;
+    color: #4b5563;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.role-pill i {
+    font-size: 20px;
+    color: #6b7280;
+}
+
+.role-pill.active {
+    border-color: var(--green);
+    background: #f0fdf4;
+    color: var(--darkgreen);
+}
+
+.role-pill.active i {
+    color: var(--green);
+}
+
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.role-badge.buyer { background: #e0f2fe; color: #0369a1; }
+.role-badge.seller { background: #fef3c7; color: #b45309; }
+.role-badge.delivery_partner { background: #f3e8ff; color: #7e22ce; }
+
+/* Google GIS Button Custom Container */
+.google-auth-wrap {
+    margin: 15px 0;
+}
+
+.google-btn-custom {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 30px;
+    background: #fff;
+    color: #374151;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.google-btn-custom:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.google-btn-custom img {
+    width: 20px;
+    height: 20px;
+}
+
+.auth-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 16px 0;
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.auth-divider::before, .auth-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.auth-divider span {
+    padding: 0 10px;
+}
+
+/* ================= HORIZONTAL ORDER TRACKER ================= */
+.order-tracker-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+.tracker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 12px;
+}
+
+.horizontal-tracker {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    margin: 25px 10px 15px 10px;
+}
+
+.tracker-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    z-index: 2;
+    position: relative;
+}
+
+.tracker-node {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.tracker-step.done .tracker-node {
+    background: var(--green);
+    color: #fff;
+}
+
+.tracker-step.active .tracker-node {
+    background: var(--orange);
+    color: #fff;
+    box-shadow: 0 0 0 6px rgba(255, 152, 0, 0.2);
+    animation: trackerPulse 1.8s infinite;
+}
+
+@keyframes trackerPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.tracker-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    text-align: center;
+}
+
+.tracker-step.active .tracker-text {
+    color: var(--orange);
+    font-weight: 700;
+}
+
+.tracker-line {
+    position: absolute;
+    top: 15px;
+    left: 12%;
+    right: 12%;
+    height: 3px;
+    background: #e5e7eb;
+    z-index: 1;
+}
+
+.tracker-line-fill {
+    height: 100%;
+    background: var(--green);
+    width: 0%;
+    transition: width 0.4s ease;
+}
+
+/* ================= CELEBRATORY CONFETTI & CHECKMARK ================= */
+.success-card {
+    text-align: center;
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.checkmark-svg {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 15px auto;
+    display: block;
+}
+
+.checkmark-circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 3;
+    stroke: var(--green);
+    fill: none;
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark-check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    stroke: var(--green);
+    stroke-width: 4;
+    fill: none;
+    animation: stroke 0.4s cubic-bezier(0.65, 0, 0.45, 1) 0.5s forwards;
+}
+
+@keyframes stroke {
+    100% {
+        stroke-dashoffset: 0;
     }
 }
 
-@media(max-width:600px){
-    .hero-text h1{
-        font-size:30px;
-    }
+/* Pure CSS Confetti */
+.confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 99999;
+    overflow: hidden;
+}
 
-    .btn-buy,.btn-sell{
-        width:100%;
-        justify-content:center;
-    }
+.confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 14px;
+    top: -20px;
+    opacity: 0.9;
+    animation: confettiFall 3.5s linear forwards;
+}
 
-    .section-title{
-        font-size:30px;
+@keyframes confettiFall {
+    0% {
+        transform: translateY(0) rotate(0deg) scale(1);
+        opacity: 1;
     }
+    100% {
+        transform: translateY(105vh) rotate(720deg) scale(0.6);
+        opacity: 0;
+    }
+}
 
-    .offer h1{
-        font-size:48px;
+/* ================= DELIVERY PARTNER ACTION BUTTONS ================= */
+.delivery-queue-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.queue-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.status-badge.Placed { background: #fef3c7; color: #92400e; }
+.status-badge.Packed { background: #e0f2fe; color: #075985; }
+.status-badge.Out_for_Delivery, .status-badge.Out { background: #ede9fe; color: #5b21b6; }
+.status-badge.Delivered { background: #dcfce7; color: #166534; }
+
+.status-action-btns {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.status-action-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.btn-pack { background: #0284c7; color: #fff; }
+.btn-out { background: #7c3aed; color: #fff; }
+.btn-delivered { background: #16a34a; color: #fff; }
+
+.btn-pack:hover { background: #0369a1; }
+.btn-out:hover { background: #6d28d9; }
+.btn-delivered:hover { background: #15803d; }
+
+/* ================= REDUCED MOTION PREFERENCE ================= */
+@media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }

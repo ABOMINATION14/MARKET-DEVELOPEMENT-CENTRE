@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Market Development Centre | Checkout</title>
+<title>Market Development Centre | Quick Checkout</title>
 <link rel="stylesheet" href="style.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<!-- Razorpay Checkout Script -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 
 <body>
@@ -24,7 +26,7 @@
         <li><a href="products.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
         <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
         <li><a href="cart.html" class="active"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
-        <li><a href="login.html"><i class="fa-solid fa-user"></i> Login</a></li>
+        <li><a href="profile.html" id="userLink"><i class="fa-solid fa-user"></i> <span id="userName">Account</span></a></li>
     </ul>
 
     <div class="icons">
@@ -48,122 +50,161 @@
 </div>
 
 <!-- ================= CHECKOUT HEADER ================= -->
-<section class="cart-header">
-    <h1>💳 Checkout</h1>
-    <p>Enter your delivery details to place the order</p>
+<section class="cart-header" style="padding-bottom:10px;">
+    <h1>⚡ Lightning Checkout</h1>
+    <p>Complete your order in 3 simple steps</p>
 </section>
 
-<!-- ================= CHECKOUT ================= -->
+<!-- ================= CHECKOUT SECTION ================= -->
 <section class="checkout-section">
     <div class="checkout-form">
-        <h2>📦 Delivery Details</h2>
+        <!-- 3-Step Progress Header -->
+        <div class="checkout-stepper-header">
+            <div class="stepper-progress-line">
+                <div class="stepper-progress-fill" id="stepperFill" style="width: 0%;"></div>
+            </div>
+            <div class="stepper-step active" id="stepIndicator1" onclick="goToStep(1)">
+                <div class="stepper-circle">1</div>
+                <div class="stepper-label">Address</div>
+            </div>
+            <div class="stepper-step" id="stepIndicator2" onclick="goToStep(2)">
+                <div class="stepper-circle">2</div>
+                <div class="stepper-label">Payment</div>
+            </div>
+            <div class="stepper-step" id="stepIndicator3" onclick="goToStep(3)">
+                <div class="stepper-circle">3</div>
+                <div class="stepper-label">Confirm</div>
+            </div>
+        </div>
 
-        <form onsubmit="return placeOrder(event)">
-            <label for="name">Full Name</label>
-            <input type="text" id="name" placeholder="Enter your full name" required>
+        <form id="checkoutMasterForm" onsubmit="return false;">
+            <!-- STEP 1: DELIVERY ADDRESS -->
+            <div class="checkout-step-pane active" id="stepPane1">
+                <h2>📍 1. Delivery Details</h2>
+                <p style="color:#6b7280;font-size:14px;margin-bottom:18px;">Where should we deliver your fresh produce?</p>
 
-            <label for="phone">Phone Number</label>
-            <input type="tel" id="phone" placeholder="Enter your phone number" required>
+                <label for="name">Recipient Full Name</label>
+                <input type="text" id="name" placeholder="e.g. Rahul Sharma" required>
 
-            <label for="address">Delivery Address <span style="color:#4caf50;font-size:13px;">(Detect location or type)</span></label>
-            <textarea id="address" rows="3" placeholder="Enter your delivery address" required></textarea>
+                <label for="phone">Mobile Phone Number (for delivery updates)</label>
+                <input type="tel" id="phone" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" required>
 
-            <h2 style="margin-top:25px;">💳 Payment Method</h2>
+                <label for="address">Full Delivery Address</label>
+                <textarea id="address" rows="3" placeholder="Flat / House No., Street, Landmark, City, Pincode" required></textarea>
 
-            <div class="payment-methods">
-                <div class="pay-option selected" onclick="selectPayment('upi',this)">
-                    <input type="radio" name="payment" value="upi" checked>
-                    <i class="fa-solid fa-mobile-screen"></i>
-                    <div>
-                        <div class="pay-label">UPI / GPay</div>
-                        <div class="pay-sub">Pay with GPay, PhonePe, Paytm</div>
+                <button type="button" class="pay-btn" onclick="validateAndGoToStep(2)" style="margin-top:10px;">
+                    Next: Payment Method <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- STEP 2: PAYMENT METHOD -->
+            <div class="checkout-step-pane" id="stepPane2">
+                <h2>💳 2. Select Payment Method</h2>
+                <p style="color:#6b7280;font-size:14px;margin-bottom:18px;">Safe, encrypted payment processing</p>
+
+                <div class="payment-methods">
+                    <div class="pay-option selected" onclick="selectPayment('razorpay', this)">
+                        <input type="radio" name="payment" value="razorpay" checked>
+                        <i class="fa-solid fa-credit-card" style="color:#0284c7;"></i>
+                        <div>
+                            <div class="pay-label">Razorpay Gateway (UPI, Cards, Netbanking)</div>
+                            <div class="pay-sub">Pay via GPay, PhonePe, Cards, Netbanking (Test Mode Enabled)</div>
+                        </div>
+                    </div>
+                    <div class="pay-option" onclick="selectPayment('upi', this)">
+                        <input type="radio" name="payment" value="upi">
+                        <i class="fa-solid fa-mobile-screen" style="color:#10b981;"></i>
+                        <div>
+                            <div class="pay-label">Direct UPI / QR Code</div>
+                            <div class="pay-sub">Pay directly to store UPI ID</div>
+                        </div>
+                    </div>
+                    <div class="pay-option" onclick="selectPayment('cod', this)">
+                        <input type="radio" name="payment" value="cod">
+                        <i class="fa-solid fa-money-bill-wave" style="color:#f59e0b;"></i>
+                        <div>
+                            <div class="pay-label">Cash on Delivery (COD)</div>
+                            <div class="pay-sub">Pay cash or UPI upon delivery</div>
+                        </div>
                     </div>
                 </div>
-                <div class="pay-option" onclick="selectPayment('netbanking',this)">
-                    <input type="radio" name="payment" value="netbanking">
-                    <i class="fa-solid fa-building-columns"></i>
-                    <div>
-                        <div class="pay-label">Netbanking</div>
-                        <div class="pay-sub">Pay directly from your bank account</div>
-                    </div>
+
+                <!-- UPI Details Sub-panel -->
+                <div class="payment-details" id="upiDetails">
+                    <label for="upiId">Enter UPI ID / VPA</label>
+                    <input type="text" id="upiId" placeholder="yourname@upi or mobile@okhdfcbank">
                 </div>
-                <div class="pay-option" onclick="selectPayment('card',this)">
-                    <input type="radio" name="payment" value="card">
-                    <i class="fa-solid fa-credit-card"></i>
-                    <div>
-                        <div class="pay-label">Credit / Debit Card</div>
-                        <div class="pay-sub">Visa, Mastercard, RuPay</div>
-                    </div>
-                </div>
-                <div class="pay-option" onclick="selectPayment('cod',this)">
-                    <input type="radio" name="payment" value="cod">
-                    <i class="fa-solid fa-money-bill-wave"></i>
-                    <div>
-                        <div class="pay-label">Cash on Delivery</div>
-                        <div class="pay-sub">Pay when you receive the order</div>
-                    </div>
+
+                <div style="display:flex;gap:10px;margin-top:20px;">
+                    <button type="button" class="tab-btn" onclick="goToStep(1)" style="flex:1;">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="pay-btn" onclick="validateAndGoToStep(3)" style="flex:2;">
+                        Review Order <i class="fa-solid fa-arrow-right"></i>
+                    </button>
                 </div>
             </div>
 
-            <!-- UPI Details -->
-            <div class="payment-details" id="upiDetails">
-                <label for="upiId">UPI ID</label>
-                <input type="text" id="upiId" placeholder="yourname@upi">
-            </div>
+            <!-- STEP 3: REVIEW & CONFIRM -->
+            <div class="checkout-step-pane" id="stepPane3">
+                <h2>📋 3. Review &amp; Confirm Order</h2>
+                <p style="color:#6b7280;font-size:14px;margin-bottom:18px;">Please verify your details before placing order</p>
 
-            <!-- Netbanking Details -->
-            <div class="payment-details" id="netbankingDetails">
-                <label for="bankName">Select Bank</label>
-                <select id="bankName">
-                    <option value="">-- Select Bank --</option>
-                    <option>State Bank of India</option>
-                    <option>HDFC Bank</option>
-                    <option>ICICI Bank</option>
-                    <option>Axis Bank</option>
-                    <option>Punjab National Bank</option>
-                    <option>Bank of Baroda</option>
-                </select>
-            </div>
+                <div style="background:#f8faf8;border:1px solid #e2e8e2;border-radius:14px;padding:16px;margin-bottom:18px;">
+                    <div style="font-weight:600;color:var(--darkgreen);margin-bottom:6px;">📍 Delivering to:</div>
+                    <div id="reviewName" style="font-size:15px;color:#111;"></div>
+                    <div id="reviewPhone" style="font-size:14px;color:#555;"></div>
+                    <div id="reviewAddress" style="font-size:14px;color:#555;margin-top:4px;"></div>
+                </div>
 
-            <!-- Card Details -->
-            <div class="payment-details" id="cardDetails">
-                <label for="cardNo">Card Number</label>
-                <input type="text" id="cardNo" placeholder="1234 5678 9012 3456">
-                <div style="display:flex;gap:10px;">
-                    <div style="flex:1;">
-                        <label for="cardExp">Expiry</label>
-                        <input type="text" id="cardExp" placeholder="MM/YY">
-                    </div>
-                    <div style="flex:1;">
-                        <label for="cardCvv">CVV</label>
-                        <input type="text" id="cardCvv" placeholder="123" maxlength="3">
-                    </div>
+                <div style="background:#f8faf8;border:1px solid #e2e8e2;border-radius:14px;padding:16px;margin-bottom:18px;">
+                    <div style="font-weight:600;color:var(--darkgreen);margin-bottom:6px;">💳 Payment Mode:</div>
+                    <div id="reviewPayment" style="font-size:15px;color:#111;text-transform:capitalize;"></div>
+                </div>
+
+                <label for="coupon">Apply Coupon Code (Optional)</label>
+                <div style="display:flex;gap:10px;margin-bottom:18px;">
+                    <input type="text" id="coupon" placeholder="e.g. FRESH20" style="margin-bottom:0;">
+                    <button type="button" class="tab-btn" onclick="applyCoupon()" style="width:auto;padding:10px 20px;">Apply</button>
+                </div>
+
+                <div style="display:flex;gap:10px;margin-top:20px;">
+                    <button type="button" class="tab-btn" onclick="goToStep(2)" style="flex:1;">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="pay-btn" id="placeOrderBtn" onclick="executeFinalOrder()" style="flex:2;">
+                        <i class="fa-solid fa-circle-check"></i> Place Order (<span id="btnPayTotal">₹0.00</span>)
+                    </button>
                 </div>
             </div>
-
-            <label for="coupon">Coupon Code (optional)</label>
-            <input type="text" id="coupon" placeholder="Enter coupon code">
-
-            <button type="submit" class="pay-btn" id="placeOrderBtn">
-                <i class="fa-solid fa-circle-check"></i> Place Order
-            </button>
         </form>
     </div>
 
+    <!-- ORDER SUMMARY SIDEBAR -->
     <div class="cart-summary">
         <h2>📋 Order Summary</h2>
-        <div id="orderItems"></div>
+        <div id="orderItems" style="max-height:260px;overflow-y:auto;margin-bottom:15px;"></div>
+        
         <div class="summary-row">
-            <span>Subtotal:</span>
+            <span>Item Subtotal:</span>
             <span>₹<span id="subTotal">0.00</span></span>
         </div>
+        <div class="summary-row" id="discountRow" style="display:none;color:#16a34a;">
+            <span>Discount (20%):</span>
+            <span>-₹<span id="discountAmt">0.00</span></span>
+        </div>
         <div class="summary-row">
-            <span>Delivery:</span>
-            <span id="delivery">FREE</span>
+            <span>Delivery Fee:</span>
+            <span id="delivery" style="font-weight:600;">FREE</span>
         </div>
         <div class="summary-row total">
-            <span>Total:</span>
+            <span>Total Payable:</span>
             <span>₹<span id="totalPrice">0.00</span></span>
+        </div>
+
+        <div style="background:#f0fdf4;padding:12px;border-radius:12px;margin-top:15px;border:1px solid #bbf7d0;font-size:13px;color:#166534;display:flex;align-items:center;gap:8px;">
+            <i class="fa-solid fa-shield-halved" style="font-size:18px;"></i>
+            <span>100% Safe &amp; Verified Farm Fresh Guarantee</span>
         </div>
     </div>
 </section>
@@ -185,148 +226,263 @@
 
 <script src="script.js"></script>
 <script>
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let currentCheckoutStep = 1;
+let selectedPaymentMethod = 'razorpay';
+let appliedDiscount = 0;
 
-// =============================
-// Auth guard - must be logged in
-// =============================
-if(!isLoggedIn()){
-    window.location.href='login.html';
+// Auth Guard
+if (!isLoggedIn()) {
+    window.location.href = 'login.html';
 }
 
-// =============================
-// Payment Method Selection
-// =============================
-function selectPayment(method, el){
-    // Update selected styling
-    document.querySelectorAll('.pay-option').forEach(o=>o.classList.remove('selected'));
+// Prefill User Details
+document.addEventListener("DOMContentLoaded", () => {
+    const user = getCurrentUser();
+    if (user) {
+        if (user.name) document.getElementById('name').value = user.name;
+        if (user.phone) document.getElementById('phone').value = user.phone;
+    }
+    displayOrderSummary();
+    updateCartCount();
+    loadLocation();
+});
+
+// Step Navigation
+function goToStep(step) {
+    currentCheckoutStep = step;
+
+    // Panes
+    document.querySelectorAll('.checkout-step-pane').forEach((p, idx) => {
+        p.classList.toggle('active', idx + 1 === step);
+    });
+
+    // Indicators
+    document.querySelectorAll('.stepper-step').forEach((s, idx) => {
+        s.classList.toggle('active', idx + 1 === step);
+        s.classList.toggle('completed', idx + 1 < step);
+    });
+
+    // Fill line
+    const pct = ((step - 1) / 2) * 100;
+    document.getElementById('stepperFill').style.width = pct + '%';
+
+    if (step === 3) {
+        populateReviewPane();
+    }
+}
+
+function validateAndGoToStep(targetStep) {
+    if (targetStep === 2) {
+        const name = document.getElementById('name').value.trim();
+        const phone = document.getElementById('phone').value.trim().replace(/\D/g, '');
+        const addr = document.getElementById('address').value.trim();
+
+        if (!name) {
+            showToast('Please enter your full name');
+            return;
+        }
+        if (phone.length !== 10) {
+            showToast('Please enter a valid 10-digit mobile number');
+            return;
+        }
+        if (!addr) {
+            showToast('Please enter delivery address');
+            return;
+        }
+    }
+    goToStep(targetStep);
+}
+
+function selectPayment(method, el) {
+    selectedPaymentMethod = method;
+    document.querySelectorAll('.pay-option').forEach(o => o.classList.remove('selected'));
     el.classList.add('selected');
     el.querySelector('input').checked = true;
 
-    // Show/hide payment details
-    document.getElementById('upiDetails').classList.toggle('show', method==='upi');
-    document.getElementById('netbankingDetails').classList.toggle('show', method==='netbanking');
-    document.getElementById('cardDetails').classList.toggle('show', method==='card');
+    const upiBox = document.getElementById('upiDetails');
+    if (upiBox) upiBox.classList.toggle('show', method === 'upi');
 }
 
-// =============================
-// Display Order Summary (INR ₹)
-// =============================
-function displayOrder(){
-    let orderItems=document.getElementById("orderItems");
-    let sub=0;
-    let items=0;
+function applyCoupon() {
+    const code = document.getElementById('coupon').value.trim().toUpperCase();
+    if (code === 'FRESH20') {
+        appliedDiscount = 0.20;
+        showToast('🎉 20% discount applied!');
+        document.getElementById('discountRow').style.display = 'flex';
+        displayOrderSummary();
+    } else {
+        showToast('❌ Invalid coupon code');
+    }
+}
 
-    orderItems.innerHTML="";
-    cart.forEach(item=>{
-        sub += item.price*item.qty;
-        items += item.qty;
+function displayOrderSummary() {
+    const orderItems = document.getElementById("orderItems");
+    if (!orderItems) return;
+
+    if (cart.length === 0) {
+        orderItems.innerHTML = '<p style="color:#888;">Cart is empty.</p>';
+        return;
+    }
+
+    let sub = 0;
+    orderItems.innerHTML = "";
+
+    cart.forEach(item => {
+        const itemTotal = item.price * item.qty;
+        sub += itemTotal;
         orderItems.innerHTML += `
         <div class="summary-row" style="font-size:14px;">
-            <span>${item.name} x${item.qty} ${item.unit||''}</span>
-            <span>${formatPrice(item.price*item.qty)}</span>
+            <span>${item.name} &times; ${item.qty} ${item.unit || 'kg'}</span>
+            <span>${formatPrice(itemTotal)}</span>
         </div>`;
     });
 
-    // Free delivery above ₹500, else ₹40
-    let delivery = sub>=500 ? 0 : 40;
-    document.getElementById("subTotal").innerText=sub.toFixed(2);
-    document.getElementById("delivery").innerText=delivery===0?"FREE":formatPrice(delivery);
-    document.getElementById("totalPrice").innerText=(sub+delivery).toFixed(2);
+    const discountAmount = sub * appliedDiscount;
+    const discountedSubtotal = sub - discountAmount;
+    const delivery = discountedSubtotal >= 500 ? 0 : 40;
+    const grandTotal = discountedSubtotal + delivery;
+
+    document.getElementById("subTotal").innerText = sub.toFixed(2);
+    document.getElementById("discountAmt").innerText = discountAmount.toFixed(2);
+    document.getElementById("delivery").innerText = delivery === 0 ? "FREE" : formatPrice(delivery);
+    document.getElementById("totalPrice").innerText = grandTotal.toFixed(2);
+    document.getElementById("btnPayTotal").innerText = formatPrice(grandTotal);
 }
 
-// =============================
-// Place Order (sends to backend API)
-// =============================
-async function placeOrder(event){
-    event.preventDefault();
+function populateReviewPane() {
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const addr = document.getElementById('address').value.trim();
 
-    if(!isLoggedIn()){
-        showToast('Please sign in first');
-        window.location.href='login.html';
-        return false;
+    document.getElementById('reviewName').innerText = name;
+    document.getElementById('reviewPhone').innerText = '+91 ' + phone;
+    document.getElementById('reviewAddress').innerText = addr;
+
+    const payLabels = {
+        razorpay: 'Razorpay Gateway (Online / UPI / Cards)',
+        upi: 'Direct UPI Transfer',
+        cod: 'Cash on Delivery (Pay upon delivery)'
+    };
+    document.getElementById('reviewPayment').innerText = payLabels[selectedPaymentMethod] || selectedPaymentMethod;
+}
+
+// Final Order Execution & Razorpay Integration
+async function executeFinalOrder() {
+    if (cart.length === 0) {
+        showToast('Cart is empty!');
+        return;
     }
 
-    let name=document.getElementById("name").value.trim();
-    let phone=document.getElementById("phone").value.trim();
-    let address=document.getElementById("address").value.trim();
-    let payment=document.querySelector('input[name="payment"]:checked').value;
-    let coupon=document.getElementById("coupon").value.trim();
+    const name = document.getElementById('name').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const address = document.getElementById('address').value.trim();
+    const user = getCurrentUser();
+    const token = getToken();
 
-    if(cart.length===0){
-        showToast("Your cart is empty!");
-        return false;
+    let sub = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+    let disc = sub * appliedDiscount;
+    let del = (sub - disc) >= 500 ? 0 : 40;
+    let finalTotal = (sub - disc) + del;
+
+    const btn = document.getElementById('placeOrderBtn');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+    btn.disabled = true;
+
+    // Razorpay Flow
+    if (selectedPaymentMethod === 'razorpay') {
+        try {
+            // 1. Create order on server
+            const createRes = await fetch(API + '/api/payment/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount: finalTotal, currency: 'INR' })
+            });
+            const rzpOrder = await createRes.json();
+
+            // Check if live Razorpay script available
+            if (window.Razorpay && rzpOrder.keyId && !rzpOrder.mode) {
+                const options = {
+                    key: rzpOrder.keyId,
+                    amount: rzpOrder.amount,
+                    currency: rzpOrder.currency,
+                    name: 'Market Development Centre',
+                    description: 'Order Payment',
+                    order_id: rzpOrder.orderId,
+                    prefill: {
+                        name: name,
+                        email: user ? user.email : '',
+                        contact: phone
+                    },
+                    theme: { color: '#2e7d32' },
+                    handler: async function (response) {
+                        await finalizeOrderPlacement(name, phone, address, 'Razorpay Verified', response.razorpay_payment_id);
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            showToast('⚠️ Payment cancelled by user');
+                            btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Place Order';
+                            btn.disabled = false;
+                        }
+                    }
+                };
+                const rzp = new Razorpay(options);
+                rzp.open();
+                return;
+            } else {
+                // Test mode fallback
+                showToast('💳 Processing test payment...');
+                await finalizeOrderPlacement(name, phone, address, 'Razorpay (Test Sandbox)', 'pay_test_' + Date.now());
+                return;
+            }
+        } catch (e) {
+            console.warn('Razorpay connect error, using COD fallback:', e);
+        }
     }
-    if(!name || !phone || !address){
-        showToast("Please fill all delivery details");
-        return false;
-    }
 
-    let user=getCurrentUser();
-    let token=getToken();
+    // Direct / COD Flow
+    await finalizeOrderPlacement(name, phone, address, selectedPaymentMethod, null);
+}
 
-    let btn=document.getElementById("placeOrderBtn");
-    btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Placing order...';
-    btn.disabled=true;
+async function finalizeOrderPlacement(name, phone, address, paymentMode, paymentId) {
+    const user = getCurrentUser();
+    const token = getToken();
 
-    // Get saved location
-    let location=null;
-    try{
-        location=JSON.parse(localStorage.getItem('deliveryLocation')||'null');
-    }catch(e){}
-
-    let orderData={
-        name:name,
-        phone:phone,
-        address:address,
-        payment:payment,
-        coupon:coupon,
-        items:cart.map(i=>({name:i.name, price:i.price, qty:i.qty, unit:i.unit||'kg'})),
-        email:user ? user.email : null,
-        location:location ? {lat:location.lat,lng:location.lng} : null
+    const orderData = {
+        name: name,
+        phone: phone,
+        address: address,
+        payment: paymentMode + (paymentId ? ` [${paymentId}]` : ''),
+        items: cart.map(i => ({ name: i.name, price: i.price, qty: i.qty, unit: i.unit || 'kg' })),
+        email: user ? user.email : null
     };
 
-    try{
-        let res=await fetch(API+'/api/orders',{
-            method:'POST',
-            headers:{
-                'Content-Type':'application/json',
-                'Authorization':'Bearer '+token
+    try {
+        const res = await fetch(API + '/api/orders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
             },
-            body:JSON.stringify(orderData)
+            body: JSON.stringify(orderData)
         });
-        let data=await res.json();
+        const data = await res.json();
 
-        if(data.success){
-            // Clear cart
-            localStorage.setItem("cart","[]");
+        if (data.success) {
+            localStorage.setItem("cart", "[]");
             updateCartCount();
-
-            showToast("🎉 Order placed successfully!");
-
-setTimeout(()=>{
-                window.location.href="order-success.html?total="+data.order.total+"&orderId="+data.order.id;
-            },1500);
-        }else{
-            showToast("❌ "+data.message);
-            btn.innerHTML='<i class="fa-solid fa-circle-check"></i> Place Order';
-            btn.disabled=false;
+            showToast("🎉 Order confirmed successfully!");
+            setTimeout(() => {
+                window.location.href = `order-success.html?total=${data.order.total}&orderId=${data.order.id}`;
+            }, 1000);
+        } else {
+            showToast("❌ " + data.message);
+            document.getElementById('placeOrderBtn').disabled = false;
         }
-    }catch(e){
-        showToast("❌ Cannot connect to server. Is the backend running?");
-        btn.innerHTML='<i class="fa-solid fa-circle-check"></i> Place Order';
-        btn.disabled=false;
+    } catch (e) {
+        showToast("❌ Could not reach backend server");
+        document.getElementById('placeOrderBtn').disabled = false;
     }
-
-    return false;
 }
-
-// =============================
-// Initialize
-// =============================
-displayOrder();
-updateCartCount();
-loadLocation();
 </script>
 </body>
 </html>

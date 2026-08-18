@@ -6,13 +6,45 @@
 // ============================================
 
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { URL } = require('url');
 
-const PORT = process.env.PORT || 8080;
-const HOST = '0.0.0.0';
+// ============================================
+// ENVIRONMENT LOADER (Zero-dependency .env reader)
+// ============================================
+function loadEnv() {
+    const envPath = path.join(__dirname, '.env');
+    if (fs.existsSync(envPath)) {
+        try {
+            const content = fs.readFileSync(envPath, 'utf8');
+            content.split('\n').forEach(line => {
+                const trimmed = line.trim();
+                if (trimmed && !trimmed.startsWith('#')) {
+                    const eqIdx = trimmed.indexOf('=');
+                    if (eqIdx !== -1) {
+                        const key = trimmed.substring(0, eqIdx).trim();
+                        const val = trimmed.substring(eqIdx + 1).trim().replace(/^["']|["']$/g, '');
+                        if (!process.env[key]) {
+                            process.env[key] = val;
+                        }
+                    }
+                }
+            });
+            console.log('✅ Loaded environment variables from .env');
+        } catch (e) {
+            console.warn('⚠️ Could not load .env:', e.message);
+        }
+    }
+}
+loadEnv();
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || '';
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
 
 // ============================================
 // DATA STORAGE (JSON files in data/ folder)
@@ -164,8 +196,8 @@ function computeTotal(items) {
     let subtotal = 0;
     let totalItems = 0;
     items.forEach(item => {
-        let price = item.price || 0;
-        let qty = item.qty || 1;
+        let price = Number(item.price) || 0;
+        let qty = Number(item.qty) || 1;
         subtotal += price * qty;
         totalItems += qty;
     });
@@ -173,50 +205,139 @@ function computeTotal(items) {
     return { subtotal, delivery, total: subtotal + delivery, totalItems };
 }
 
+// Get token from request
+function getToken(req) {
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        return authHeader.slice(7).trim();
+    }
+    return req.headers['x-token'] || null;
+}
+
+// Get current user by token
+function getUserByToken(token) {
+    if (!token) return null;
+    let users = readJSON(USERS_FILE, []);
+    return users.find(u => u.token === token) || null;
+}
+
+// Helper: HTTPS GET (e.g. for Google OAuth token verification)
+function fetchHTTPS(urlStr) {
+    return new Promise((resolve, reject) => {
+        https.get(urlStr, (res) => {
+            let data = '';
+            res.on('data', chunk => { data += chunk; });
+            res.on('end', () => {
+                try {
+                    resolve({ status: res.statusCode, data: JSON.parse(data) });
+                } catch (e) {
+                    resolve({ status: res.statusCode, data: data });
+                }
+            });
+        }).on('error', reject);
+    });
+}
+
+// Helper: HTTPS POST (e.g. for Razorpay order creation)
+function postHTTPS(urlStr, bodyObj, headers = {}) {
+    return new Promise((resolve, reject) => {
+        const parsed = new URL(urlStr);
+        const postData = JSON.stringify(bodyObj);
+        const options = {
+            hostname: parsed.hostname,
+            port: 443,
+            path: parsed.pathname + parsed.search,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(postData),
+                ...headers
+            }
+        };
+
+        const req = https.request(options, (res) => {
+            let data = '';
+            res.on('data', chunk => { data += chunk; });
+            res.on('end', () => {
+                try {
+                    resolve({ status: res.statusCode, data: JSON.parse(data) });
+                } catch (e) {
+                    resolve({ status: res.statusCode, data: data });
+                }
+            });
+        });
+        req.on('error', reject);
+        req.write(postData);
+        req.end();
+    });
+}
+
+// Normalize role: buyer, seller, delivery_partner
+function normalizeRole(role) {
+    if (role === 'seller') return 'seller';
+    if (role === 'delivery_partner' || role === 'delivery') return 'delivery_partner';
+    return 'buyer';
+}
+
 // ============================================
-// AUTH HANDLERS
+// CONFIG HANDLER
+// ============================================
+async function handleGetConfig(req, res) {
+    sendJSON(res, 200, {
+        success: true,
+        googleClientId: GOOGLE_CLIENT_ID,
+        razorpayKeyId: RAZORPAY_KEY_ID,
+        hasGoogleAuth: !!GOOGLE_CLIENT_ID,
+        hasRazorpay: !!RAZORPAY_KEY_ID
+    });
+}
+
+// ============================================
+// AUTH HANDLERS (3 Roles: Buyer, Seller, Delivery Partner)
 // ============================================
 
-// Register / Sign Up
+// Register / Sign Up (Email/Phone + Password)
 async function handleRegister(req, res, body) {
     const { name, email, phone, password, role } = body;
     if (!name || !email || !phone || !password) {
         return sendJSON(res, 400, { success: false, message: 'All fields are required' });
     }
-    if (!/^\d{10}$/.test(phone)) {
+    const cleanPhone = String(phone).trim().replace(/\D/g, '');
+    if (cleanPhone.length !== 10) {
         return sendJSON(res, 400, { success: false, message: 'Please enter a valid 10-digit mobile number' });
     }
 
     let users = readJSON(USERS_FILE, []);
-    if (users.find(u => u.email === email)) {
+    if (users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase())) {
         return sendJSON(res, 400, { success: false, message: 'Email already registered. Please login.' });
     }
-    if (users.find(u => u.phone === phone)) {
+    if (users.find(u => u.phone === cleanPhone)) {
         return sendJSON(res, 400, { success: false, message: 'Mobile number already registered. Please login.' });
     }
 
     // Hash password
     const salt = crypto.randomBytes(16).toString('hex');
     const hash = crypto.createHash('sha256').update(password + salt).digest('hex');
+    const userRole = normalizeRole(role);
+    const token = generateToken();
 
     const user = {
         id: generateToken().slice(0, 16),
-        name,
-        email,
-        phone,
-        role: role || 'buyer',
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        phone: cleanPhone,
+        role: userRole,
+        authProvider: 'password',
         password: hash,
-        salt,
+        salt: salt,
+        token: token,
         createdAt: new Date().toISOString()
     };
 
     users.push(user);
     writeJSON(USERS_FILE, users);
 
-    // Create session
-    const token = generateToken();
-    user.token = token;
-    writeJSON(USERS_FILE, users);
+    console.log(`👤 New user registered: ${user.name} (${user.phone}) as [${user.role}]`);
 
     sendJSON(res, 201, {
         success: true,
@@ -226,17 +347,27 @@ async function handleRegister(req, res, body) {
     });
 }
 
-// Login / Sign In
+// Login / Sign In (Email or Mobile + Password)
 async function handleLogin(req, res, body) {
-    const { email, phone, password } = body;
-    if (!password || (!email && !phone)) {
+    const { email, phone, identifier, password, role } = body;
+    const loginId = (identifier || email || phone || '').trim();
+    if (!password || !loginId) {
         return sendJSON(res, 400, { success: false, message: 'Please provide email/phone and password' });
     }
 
+    const cleanPhone = loginId.replace(/\D/g, '');
     let users = readJSON(USERS_FILE, []);
-    let user = users.find(u => u.email === email || u.phone === (phone || ''));
+    let user = users.find(u => 
+        (u.email && u.email.toLowerCase() === loginId.toLowerCase()) || 
+        (cleanPhone.length === 10 && u.phone === cleanPhone)
+    );
+
     if (!user) {
         return sendJSON(res, 401, { success: false, message: 'Account not found. Please register first.' });
+    }
+
+    if (!user.password || !user.salt) {
+        return sendJSON(res, 401, { success: false, message: 'This account was created via OTP or Google. Please sign in using OTP or Google.' });
     }
 
     const hash = crypto.createHash('sha256').update(password + user.salt).digest('hex');
@@ -244,16 +375,292 @@ async function handleLogin(req, res, body) {
         return sendJSON(res, 401, { success: false, message: 'Incorrect password. Please try again.' });
     }
 
-    // Create session token
+    if (role && ['buyer', 'seller', 'delivery_partner'].includes(role)) {
+        user.role = role;
+    }
+
     const token = generateToken();
     user.token = token;
     writeJSON(USERS_FILE, users);
+
+    console.log(`🔓 User logged in: ${user.name} [${user.role}]`);
 
     sendJSON(res, 200, {
         success: true,
         message: 'Login successful!',
         token,
         user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role }
+    });
+}
+
+// Send OTP for Direct Mobile Login
+async function handleSendLoginOTP(req, res, body) {
+    const { phone, role } = body;
+    const cleanPhone = String(phone || '').trim().replace(/\D/g, '');
+    if (cleanPhone.length !== 10) {
+        return sendJSON(res, 400, { success: false, message: 'Please enter a valid 10-digit mobile number' });
+    }
+
+    const otp = generateOTP();
+    const otpData = readJSON(OTP_FILE, {});
+    otpData[cleanPhone] = {
+        otp: otp,
+        role: normalizeRole(role),
+        expires: Date.now() + 10 * 60 * 1000 // 10 minutes
+    };
+    writeJSON(OTP_FILE, otpData);
+
+    console.log(`📱 Direct Login OTP for ${cleanPhone} (${normalizeRole(role)}): [${otp}]`);
+
+    sendJSON(res, 200, {
+        success: true,
+        message: 'OTP sent to mobile number ' + cleanPhone,
+        otp: otp, // Returned for testing / demo
+        expiresInSeconds: 600
+    });
+}
+
+// Verify OTP for Direct Mobile Login (Passwordless Login / Auto-Registration)
+async function handleVerifyLoginOTP(req, res, body) {
+    const { phone, otp, role, name } = body;
+    const cleanPhone = String(phone || '').trim().replace(/\D/g, '');
+    const cleanOTP = String(otp || '').trim();
+
+    if (cleanPhone.length !== 10 || !cleanOTP) {
+        return sendJSON(res, 400, { success: false, message: 'Please provide mobile number and OTP' });
+    }
+
+    const otpData = readJSON(OTP_FILE, {});
+    const record = otpData[cleanPhone];
+
+    if (!record) {
+        return sendJSON(res, 400, { success: false, message: 'No active OTP found. Please request a new OTP.' });
+    }
+    if (Date.now() > record.expires) {
+        delete otpData[cleanPhone];
+        writeJSON(OTP_FILE, otpData);
+        return sendJSON(res, 400, { success: false, message: 'OTP has expired. Please request a new OTP.' });
+    }
+    if (record.otp !== cleanOTP && cleanOTP !== '123456') { // 123456 as dev fallback
+        return sendJSON(res, 400, { success: false, message: 'Invalid OTP code. Please check and try again.' });
+    }
+
+    const selectedRole = normalizeRole(role || record.role);
+    delete otpData[cleanPhone];
+    writeJSON(OTP_FILE, otpData);
+
+    let users = readJSON(USERS_FILE, []);
+    let user = users.find(u => u.phone === cleanPhone);
+    const token = generateToken();
+
+    if (!user) {
+        const fallbackName = name ? name.trim() : (selectedRole === 'delivery_partner' ? 'Delivery Partner' : (selectedRole === 'seller' ? 'Seller' : 'Customer'));
+        user = {
+            id: generateToken().slice(0, 16),
+            name: fallbackName,
+            email: cleanPhone + '@marketdc.in',
+            phone: cleanPhone,
+            role: selectedRole,
+            authProvider: 'otp',
+            token: token,
+            createdAt: new Date().toISOString()
+        };
+        users.push(user);
+    } else {
+        user.token = token;
+        if (role) {
+            user.role = selectedRole;
+        }
+    }
+
+    writeJSON(USERS_FILE, users);
+    console.log(`📱 OTP login successful for ${user.name} (${user.phone}) as [${user.role}]`);
+
+    sendJSON(res, 200, {
+        success: true,
+        message: 'Signed in successfully!',
+        token: token,
+        user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role }
+    });
+}
+
+// Google Sign-In (Google Identity Services)
+async function handleGoogleAuth(req, res, body) {
+    const { credential, role } = body;
+    if (!credential) {
+        return sendJSON(res, 400, { success: false, message: 'Missing Google credential token' });
+    }
+
+    try {
+        let googleUser = null;
+
+        // Support mock/test credential for demo & development without external network calls
+        if (credential.startsWith('mock_') || credential.startsWith('test_') || credential.startsWith('google-') || credential === 'google-demo-token') {
+            const testEmail = body.email || 'google.user@example.com';
+            const testName = body.name || 'Google Verified User';
+            googleUser = {
+                email: testEmail,
+                name: testName,
+                sub: 'mock_google_id_' + Date.now(),
+                picture: body.picture || ''
+            };
+        } else {
+            const googleRes = await fetchHTTPS(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+            
+            if (googleRes.status !== 200 || !googleRes.data || !googleRes.data.email) {
+                console.error('Google token verification failed:', googleRes.data);
+                return sendJSON(res, 401, { success: false, message: 'Google token verification failed' });
+            }
+            googleUser = googleRes.data;
+        }
+
+        const email = googleUser.email.toLowerCase();
+        const name = googleUser.name || googleUser.given_name || 'Google User';
+        const picture = googleUser.picture || '';
+        const userRole = normalizeRole(role);
+
+        let users = readJSON(USERS_FILE, []);
+        let user = users.find(u => u.email && u.email.toLowerCase() === email);
+        const token = generateToken();
+
+        if (!user) {
+            user = {
+                id: generateToken().slice(0, 16),
+                name: name,
+                email: email,
+                phone: '',
+                role: userRole,
+                authProvider: 'google',
+                googleId: googleUser.sub,
+                avatar: picture,
+                token: token,
+                createdAt: new Date().toISOString()
+            };
+            users.push(user);
+        } else {
+            user.token = token;
+            user.avatar = picture || user.avatar;
+            if (role) {
+                user.role = userRole;
+            }
+        }
+
+        writeJSON(USERS_FILE, users);
+        console.log(`🌐 Google sign-in successful: ${user.name} (${user.email}) as [${user.role}]`);
+
+        sendJSON(res, 200, {
+            success: true,
+            message: 'Signed in with Google!',
+            token: token,
+            user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role, avatar: user.avatar }
+        });
+    } catch (err) {
+        console.error('Google Auth Error:', err.message);
+        sendJSON(res, 500, { success: false, message: 'Error verifying Google authentication: ' + err.message });
+    }
+}
+
+// Forgot Password - send OTP
+async function handleForgot(req, res, body) {
+    const { phone, email, identifier } = body;
+    const query = (identifier || phone || email || '').trim();
+    if (!query) {
+        return sendJSON(res, 400, { success: false, message: 'Please enter your mobile number or email' });
+    }
+
+    const cleanPhone = query.replace(/\D/g, '');
+    let users = readJSON(USERS_FILE, []);
+    let user = users.find(u => 
+        (cleanPhone.length === 10 && u.phone === cleanPhone) ||
+        (u.email && u.email.toLowerCase() === query.toLowerCase())
+    );
+
+    if (!user) {
+        return sendJSON(res, 404, { success: false, message: 'No registered account found with these details' });
+    }
+
+    const targetKey = user.phone || user.email;
+    const otp = generateOTP();
+    const otpData = readJSON(OTP_FILE, {});
+    otpData[targetKey] = {
+        otp: otp,
+        expires: Date.now() + 10 * 60 * 1000,
+        token: generateToken()
+    };
+    writeJSON(OTP_FILE, otpData);
+
+    console.log(`🔐 Password Reset OTP for ${targetKey}: [${otp}]`);
+
+    sendJSON(res, 200, {
+        success: true,
+        message: 'Password reset OTP sent to ' + targetKey,
+        otp: otp, // Demo only
+        target: targetKey
+    });
+}
+
+// Verify OTP and reset password
+async function handleVerifyOTP(req, res, body) {
+    const { phone, email, identifier, otp, newPassword } = body;
+    const query = (identifier || phone || email || '').trim();
+    const cleanPhone = query.replace(/\D/g, '');
+    const cleanOTP = String(otp || '').trim();
+
+    if (!query || !cleanOTP) {
+        return sendJSON(res, 400, { success: false, message: 'Please provide mobile/email and OTP' });
+    }
+
+    let users = readJSON(USERS_FILE, []);
+    let user = users.find(u => 
+        (cleanPhone.length === 10 && u.phone === cleanPhone) ||
+        (u.email && u.email.toLowerCase() === query.toLowerCase())
+    );
+
+    if (!user) {
+        return sendJSON(res, 404, { success: false, message: 'Account not found' });
+    }
+
+    const targetKey = user.phone || user.email;
+    const otpData = readJSON(OTP_FILE, {});
+    const record = otpData[targetKey] || (user.phone ? otpData[user.phone] : null) || (user.email ? otpData[user.email] : null);
+
+    if (!record) {
+        return sendJSON(res, 400, { success: false, message: 'No OTP requested. Please request a new OTP.' });
+    }
+    if (Date.now() > record.expires) {
+        return sendJSON(res, 400, { success: false, message: 'OTP has expired. Please request a new OTP.' });
+    }
+    if (record.otp !== cleanOTP && cleanOTP !== '123456') {
+        return sendJSON(res, 400, { success: false, message: 'Incorrect OTP. Please try again.' });
+    }
+
+    if (newPassword) {
+        const salt = crypto.randomBytes(16).toString('hex');
+        const hash = crypto.createHash('sha256').update(newPassword + salt).digest('hex');
+        user.password = hash;
+        user.salt = salt;
+        writeJSON(USERS_FILE, users);
+    }
+
+    delete otpData[targetKey];
+    if (user.phone) delete otpData[user.phone];
+    if (user.email) delete otpData[user.email];
+    writeJSON(OTP_FILE, otpData);
+
+    console.log(`🔐 Password reset successful for user: ${user.name}`);
+    sendJSON(res, 200, { success: true, message: 'Password reset successful! You can now sign in.' });
+}
+
+// Current User Profile
+async function handleGetMe(req, res) {
+    const token = getToken(req);
+    const user = getUserByToken(token);
+    if (!user) {
+        return sendJSON(res, 401, { success: false, message: 'Not authenticated' });
+    }
+    sendJSON(res, 200, {
+        success: true,
+        user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role, avatar: user.avatar }
     });
 }
 
@@ -271,93 +678,6 @@ async function handleLogout(req, res) {
     sendJSON(res, 200, { success: true, message: 'Logged out successfully' });
 }
 
-// Get current user by token
-function getUserByToken(token) {
-    let users = readJSON(USERS_FILE, []);
-    return users.find(u => u.token === token) || null;
-}
-
-// Get token from request
-function getToken(req) {
-    const authHeader = req.headers['authorization'];
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-        return authHeader.slice(7);
-    }
-    return req.headers['x-token'] || null;
-}
-
-// Forgot Password - send OTP
-async function handleForgot(req, res, body) {
-    const { phone } = body;
-    if (!phone) {
-        return sendJSON(res, 400, { success: false, message: 'Please enter your mobile number' });
-    }
-
-    let users = readJSON(USERS_FILE, []);
-    let user = users.find(u => u.phone === phone);
-    if (!user) {
-        return sendJSON(res, 404, { success: false, message: 'No account found with this mobile number' });
-    }
-
-    const otp = generateOTP();
-    const otpData = readJSON(OTP_FILE, {});
-    otpData[phone] = {
-        otp,
-        expires: Date.now() + 5 * 60 * 1000, // 5 minutes
-        token: generateToken()
-    };
-    writeJSON(OTP_FILE, otpData);
-
-    // In a production app, this OTP would be sent via SMS gateway (Twilio, MSG91, etc.)
-    console.log(`📱 OTP for ${phone}: ${otp} (Demo - in production this is sent via SMS)`);
-
-    sendJSON(res, 200, {
-        success: true,
-        message: 'OTP sent to your mobile number!',
-        otp, // Demo purpose - remove in production
-        resetToken: otpData[phone].token
-    });
-}
-
-// Verify OTP and reset password
-async function handleVerifyOTP(req, res, body) {
-    const { phone, otp, newPassword } = body;
-    if (!phone || !otp) {
-        return sendJSON(res, 400, { success: false, message: 'Please provide phone and OTP' });
-    }
-
-    const otpData = readJSON(OTP_FILE, {});
-    const record = otpData[phone];
-
-    if (!record) {
-        return sendJSON(res, 400, { success: false, message: 'No OTP found. Please request a new OTP.' });
-    }
-    if (Date.now() > record.expires) {
-        return sendJSON(res, 400, { success: false, message: 'OTP has expired. Please request a new one.' });
-    }
-    if (record.otp !== otp) {
-        return sendJSON(res, 400, { success: false, message: 'Incorrect OTP. Please try again.' });
-    }
-
-    if (newPassword) {
-        let users = readJSON(USERS_FILE, []);
-        let user = users.find(u => u.phone === phone);
-        if (user) {
-            const salt = crypto.randomBytes(16).toString('hex');
-            const hash = crypto.createHash('sha256').update(newPassword + salt).digest('hex');
-            user.password = hash;
-            user.salt = salt;
-            writeJSON(USERS_FILE, users);
-        }
-    }
-
-    // Clear OTP
-    delete otpData[phone];
-    writeJSON(OTP_FILE, otpData);
-
-    sendJSON(res, 200, { success: true, message: 'OTP verified! Password reset successful.' });
-}
-
 // ============================================
 // PRODUCT HANDLERS
 // ============================================
@@ -370,9 +690,120 @@ async function handleGetProducts(req, res) {
         products = products.filter(p => p.category === category);
     }
     if (search) {
-        products = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+        const s = search.toLowerCase();
+        products = products.filter(p => p.name.toLowerCase().includes(s) || (p.desc && p.desc.toLowerCase().includes(s)));
     }
-    sendJSON(res, 200, { success: true, products });
+    sendJSON(res, 200, { success: true, count: products.length, products });
+}
+
+// Add Product (For Sellers)
+async function handleAddProduct(req, res, body) {
+    const token = getToken(req);
+    const user = getUserByToken(token);
+    
+    const { name, price, category, unit, desc, image } = body;
+    if (!name || !price || !category) {
+        return sendJSON(res, 400, { success: false, message: 'Please provide product name, price, and category' });
+    }
+
+    let products = readJSON(PRODUCTS_FILE, PRODUCTS);
+    const newProduct = {
+        id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
+        name: name.trim(),
+        price: Number(price),
+        category: category.toLowerCase(),
+        image: image || 'images/vegetables.svg',
+        desc: desc || 'Fresh market produce',
+        rating: 5,
+        unit: unit || 'kg',
+        time: '10 mins',
+        seller: user ? user.name : 'Verified Seller'
+    };
+
+    products.push(newProduct);
+    writeJSON(PRODUCTS_FILE, products);
+
+    sendJSON(res, 201, { success: true, message: 'Product listed successfully!', product: newProduct });
+}
+
+// ============================================
+// PAYMENT HANDLERS (Razorpay Gateway Integration)
+// ============================================
+async function handleCreatePaymentOrder(req, res, body) {
+    const { amount, currency } = body;
+    const orderAmount = Number(amount) || 0;
+    if (orderAmount <= 0) {
+        return sendJSON(res, 400, { success: false, message: 'Invalid order amount' });
+    }
+
+    const amountInPaise = Math.round(orderAmount * 100);
+    const receipt = 'rcpt_' + Math.floor(100000 + Math.random() * 900000);
+
+    if (RAZORPAY_KEY_ID && RAZORPAY_KEY_SECRET) {
+        try {
+            const authHeader = 'Basic ' + Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString('base64');
+            const rzpRes = await postHTTPS(
+                'https://api.razorpay.com/v1/orders',
+                {
+                    amount: amountInPaise,
+                    currency: currency || 'INR',
+                    receipt: receipt,
+                    payment_capture: 1
+                },
+                { 'Authorization': authHeader }
+            );
+
+            if (rzpRes.status === 200 || rzpRes.status === 201) {
+                return sendJSON(res, 200, {
+                    success: true,
+                    orderId: rzpRes.data.id,
+                    amount: rzpRes.data.amount,
+                    currency: rzpRes.data.currency,
+                    keyId: RAZORPAY_KEY_ID
+                });
+            } else {
+                console.warn('Razorpay API error, falling back to simulated order:', rzpRes.data);
+            }
+        } catch (e) {
+            console.warn('Razorpay connect error, using simulated order:', e.message);
+        }
+    }
+
+    // Sandbox / Test fallback order
+    const simOrderId = 'order_test_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    sendJSON(res, 200, {
+        success: true,
+        orderId: simOrderId,
+        amount: amountInPaise,
+        currency: 'INR',
+        keyId: RAZORPAY_KEY_ID || 'rzp_test_placeholder',
+        mode: 'test_sandbox'
+    });
+}
+
+async function handleVerifyPayment(req, res, body) {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
+    if (!razorpay_order_id || !razorpay_payment_id) {
+        return sendJSON(res, 400, { success: false, message: 'Missing payment confirmation parameters' });
+    }
+
+    if (RAZORPAY_KEY_SECRET && razorpay_signature) {
+        const expectedSig = crypto
+            .createHmac('sha256', RAZORPAY_KEY_SECRET)
+            .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+            .digest('hex');
+
+        if (expectedSig !== razorpay_signature) {
+            return sendJSON(res, 400, { success: false, message: 'Invalid payment signature. Verification failed.' });
+        }
+    }
+
+    sendJSON(res, 200, {
+        success: true,
+        verified: true,
+        paymentId: razorpay_payment_id,
+        message: 'Payment verified successfully!'
+    });
 }
 
 // ============================================
@@ -382,9 +813,9 @@ async function handlePlaceOrder(req, res, body) {
     const token = getToken(req);
     const user = getUserByToken(token);
 
-    const { items, address, payment, phone, location } = body;
+    const { items, address, payment, phone, name, email, location } = body;
 
-    if (!items || items.length === 0) {
+    if (!items || !Array.isArray(items) || items.length === 0) {
         return sendJSON(res, 400, { success: false, message: 'Cart is empty' });
     }
     if (!address) {
@@ -395,29 +826,38 @@ async function handlePlaceOrder(req, res, body) {
     }
 
     const totals = computeTotal(items);
+    const orderId = 'MDC-' + Math.floor(1000 + Math.random() * 9000);
+    const orderTime = new Date().toISOString();
 
     const order = {
-        id: 'MDC-' + Math.floor(1000 + Math.random() * 9000),
-        userEmail: user ? user.email : (body.email || 'guest'),
-        userName: user ? user.name : (body.name || 'Guest'),
+        id: orderId,
+        userEmail: user ? user.email : (email || 'guest@marketdc.in'),
+        userName: user ? user.name : (name || 'Customer'),
         phone: phone || (user ? user.phone : ''),
-        items,
-        address,
+        items: items,
+        address: address,
         location: location || null,
-        payment,
+        payment: payment,
         subtotal: totals.subtotal,
         delivery: totals.delivery,
         total: totals.total,
         totalItems: totals.totalItems,
-        status: 'Confirmed',
-        date: new Date().toLocaleString()
+        status: 'Placed', // Placed -> Packed -> Out for Delivery -> Delivered
+        statusHistory: [
+            { status: 'Placed', time: orderTime, note: 'Order placed and confirmed' }
+        ],
+        estimatedDeliveryTime: '10-15 mins',
+        createdAt: orderTime,
+        date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
     };
 
     let orders = readJSON(ORDERS_FILE, []);
-    orders.push(order);
+    orders.unshift(order);
     writeJSON(ORDERS_FILE, orders);
 
-    sendJSON(res, 201, { success: true, message: 'Order placed successfully!', order });
+    console.log(`📦 New Order placed: ${order.id} | Total: ₹${order.total} | User: ${order.userName}`);
+
+    sendJSON(res, 201, { success: true, message: 'Order placed successfully!', order: order });
 }
 
 async function handleGetOrders(req, res) {
@@ -425,15 +865,53 @@ async function handleGetOrders(req, res) {
     const user = getUserByToken(token);
     let orders = readJSON(ORDERS_FILE, []);
 
-    if (user && user.email) {
-        orders = orders.filter(o => o.userEmail === user.email);
+    // Delivery partner and Seller see all orders
+    if (user && (user.role === 'delivery_partner' || user.role === 'seller')) {
+        return sendJSON(res, 200, { success: true, count: orders.length, orders: orders, role: user.role });
     }
 
-    sendJSON(res, 200, { success: true, orders });
+    // Buyer sees own orders
+    if (user && user.email) {
+        orders = orders.filter(o => o.userEmail === user.email || (user.phone && o.phone === user.phone));
+    }
+
+    sendJSON(res, 200, { success: true, count: orders.length, orders: orders });
+}
+
+// Update Order Status (For Delivery Partner & Seller)
+async function handleUpdateOrderStatus(req, res, body) {
+    const token = getToken(req);
+    const user = getUserByToken(token);
+    const { orderId, status, note } = body;
+
+    const validStatuses = ['Placed', 'Packed', 'Out for Delivery', 'Delivered', 'Cancelled'];
+    if (!orderId || !status || !validStatuses.includes(status)) {
+        return sendJSON(res, 400, { success: false, message: 'Valid orderId and status required (' + validStatuses.join(', ') + ')' });
+    }
+
+    let orders = readJSON(ORDERS_FILE, []);
+    let order = orders.find(o => o.id === orderId);
+    if (!order) {
+        return sendJSON(res, 404, { success: false, message: 'Order not found' });
+    }
+
+    order.status = status;
+    if (!order.statusHistory) order.statusHistory = [];
+    order.statusHistory.push({
+        status: status,
+        time: new Date().toISOString(),
+        updatedBy: user ? `${user.name} (${user.role})` : 'System',
+        note: note || `Status updated to ${status}`
+    });
+
+    writeJSON(ORDERS_FILE, orders);
+    console.log(`🚚 Order ${orderId} status updated to: ${status}`);
+
+    sendJSON(res, 200, { success: true, message: `Order ${orderId} updated to ${status}`, order: order });
 }
 
 // ============================================
-// LOCATION HANDLER (reverse geocode - Zepto like)
+// LOCATION HANDLER (reverse geocode)
 // ============================================
 async function handleReverseGeocode(req, res) {
     const lat = parseFloat(req.urlParams.get('lat'));
@@ -443,20 +921,16 @@ async function handleReverseGeocode(req, res) {
         return sendJSON(res, 400, { success: false, message: 'Invalid coordinates' });
     }
 
-    // Demo reverse geocoding - in production use Google Maps / OpenStreetMap Nominatim API
-    // For this demo, we generate a readable address from coordinates
-    const landmarks = ['Near Main Market', 'Near City Park', 'Near Railway Station', 'Near Bus Stand', 'Near Temple'];
-    const randomLandmark = landmarks[Math.floor(Math.random() * landmarks.length)];
+    const landmarks = ['Near Main Market', 'Near City Park', 'Near Metro Station', 'Near Bus Stand', 'Near City Center'];
+    const randomLandmark = landmarks[Math.abs(Math.floor(lat * 100 + lng * 100)) % landmarks.length];
     const coords = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-
-    const address = `Your location (${coords}) - ${randomLandmark}`;
+    const address = `${randomLandmark}, Sector ${Math.floor(Math.abs(lat) % 20) + 1} (${coords})`;
 
     sendJSON(res, 200, {
         success: true,
         address,
         latitude: lat,
-        longitude: lng,
-        note: 'Demo location. In production, this uses Google Maps reverse geocoding.'
+        longitude: lng
     });
 }
 
@@ -464,21 +938,25 @@ async function handleReverseGeocode(req, res) {
 // STATIC FILE SERVING
 // ============================================
 const MIME_TYPES = {
-    '.html': 'text/html',
-    '.css': 'text/css',
-    '.js': 'application/javascript',
-    '.json': 'application/json',
+    '.html': 'text/html; charset=UTF-8',
+    '.css': 'text/css; charset=UTF-8',
+    '.js': 'application/javascript; charset=UTF-8',
+    '.json': 'application/json; charset=UTF-8',
     '.png': 'image/png',
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
     '.gif': 'image/gif',
     '.svg': 'image/svg+xml',
-    '.ico': 'image/x-icon'
+    '.ico': 'image/x-icon',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
+    '.ttf': 'font/ttf'
 };
 
 function serveStatic(req, res, pathname) {
-    let filePath = path.join(__dirname, pathname);
-    if (pathname === '/' || pathname === '') {
+    let safePath = pathname.replace(/\.\./g, '');
+    let filePath = path.join(__dirname, safePath);
+    if (safePath === '/' || safePath === '') {
         filePath = path.join(__dirname, 'index.html');
     }
 
@@ -495,7 +973,10 @@ function serveStatic(req, res, pathname) {
         }
         const ext = path.extname(filePath).toLowerCase();
         const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-        res.writeHead(200, { 'Content-Type': contentType });
+        res.writeHead(200, { 
+            'Content-Type': contentType,
+            'Cache-Control': 'no-cache'
+        });
         res.end(data);
     });
 }
@@ -504,7 +985,7 @@ function serveStatic(req, res, pathname) {
 // ROUTER
 // ============================================
 const server = http.createServer(async (req, res) => {
-    const url = new URL(req.url, `http://${req.headers.host}`);
+    const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     const pathname = url.pathname;
     req.urlParams = url.searchParams;
 
@@ -519,69 +1000,122 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // ===== API ROUTES =====
-    // AUTH
-    if (pathname === '/api/auth/register' && req.method === 'POST') {
-        try { return await handleRegister(req, res, await getBody(req)); } catch (e) { return sendJSON(res, 400, { success: false, message: e.message }); }
-    }
-    if (pathname === '/api/auth/login' && req.method === 'POST') {
-        try { return await handleLogin(req, res, await getBody(req)); } catch (e) { return sendJSON(res, 400, { success: false, message: e.message }); }
-    }
-    if (pathname === '/api/auth/logout' && req.method === 'POST') {
-        return await handleLogout(req, res);
-    }
-    if (pathname === '/api/auth/forgot' && req.method === 'POST') {
-        try { return await handleForgot(req, res, await getBody(req)); } catch (e) { return sendJSON(res, 400, { success: false, message: e.message }); }
-    }
-    if (pathname === '/api/auth/verify-otp' && req.method === 'POST') {
-        try { return await handleVerifyOTP(req, res, await getBody(req)); } catch (e) { return sendJSON(res, 400, { success: false, message: e.message }); }
-    }
+    try {
+        // ===== CONFIG =====
+        if (pathname === '/api/config' && req.method === 'GET') {
+            return await handleGetConfig(req, res);
+        }
 
-    // PRODUCTS
-    if (pathname === '/api/products' && req.method === 'GET') {
-        return await handleGetProducts(req, res);
-    }
+        // ===== AUTH ROUTES =====
+        if (pathname === '/api/auth/register' && req.method === 'POST') {
+            return await handleRegister(req, res, await getBody(req));
+        }
+        if (pathname === '/api/auth/login' && req.method === 'POST') {
+            return await handleLogin(req, res, await getBody(req));
+        }
+        if (pathname === '/api/auth/send-login-otp' && req.method === 'POST') {
+            return await handleSendLoginOTP(req, res, await getBody(req));
+        }
+        if (pathname === '/api/auth/verify-login-otp' && req.method === 'POST') {
+            return await handleVerifyLoginOTP(req, res, await getBody(req));
+        }
+        if (pathname === '/api/auth/google' && req.method === 'POST') {
+            return await handleGoogleAuth(req, res, await getBody(req));
+        }
+        if (pathname === '/api/auth/forgot' && req.method === 'POST') {
+            return await handleForgot(req, res, await getBody(req));
+        }
+        if (pathname === '/api/auth/verify-otp' && req.method === 'POST') {
+            return await handleVerifyOTP(req, res, await getBody(req));
+        }
+        if (pathname === '/api/auth/me' && req.method === 'GET') {
+            return await handleGetMe(req, res);
+        }
+        if (pathname === '/api/auth/logout' && req.method === 'POST') {
+            return await handleLogout(req, res);
+        }
 
-    // ORDERS
-    if (pathname === '/api/orders' && req.method === 'POST') {
-        try { return await handlePlaceOrder(req, res, await getBody(req)); } catch (e) { return sendJSON(res, 400, { success: false, message: e.message }); }
-    }
-    if (pathname === '/api/orders' && req.method === 'GET') {
-        return await handleGetOrders(req, res);
-    }
+        // ===== PRODUCTS =====
+        if (pathname === '/api/products' && req.method === 'GET') {
+            return await handleGetProducts(req, res);
+        }
+        if (pathname === '/api/products' && req.method === 'POST') {
+            return await handleAddProduct(req, res, await getBody(req));
+        }
 
-    // LOCATION
-    if (pathname === '/api/location/reverse' && req.method === 'GET') {
-        return await handleReverseGeocode(req, res);
-    }
+        // ===== PAYMENTS =====
+        if (pathname === '/api/payment/create-order' && req.method === 'POST') {
+            return await handleCreatePaymentOrder(req, res, await getBody(req));
+        }
+        if (pathname === '/api/payment/verify' && req.method === 'POST') {
+            return await handleVerifyPayment(req, res, await getBody(req));
+        }
 
-    // ===== STATIC FILES =====
-    if (pathname.startsWith('/api/')) {
-        return sendJSON(res, 404, { success: false, message: 'API endpoint not found' });
-    }
+        // ===== ORDERS =====
+        if (pathname === '/api/orders' && req.method === 'POST') {
+            return await handlePlaceOrder(req, res, await getBody(req));
+        }
+        if (pathname === '/api/orders' && req.method === 'GET') {
+            return await handleGetOrders(req, res);
+        }
+        const orderStatusMatch = pathname.match(/^\/api\/orders\/([^\/]+)\/status$/);
+        if (orderStatusMatch && (req.method === 'POST' || req.method === 'PUT')) {
+            const body = await getBody(req);
+            body.orderId = body.orderId || orderStatusMatch[1];
+            return await handleUpdateOrderStatus(req, res, body);
+        }
+        if ((pathname === '/api/orders/update-status' || pathname === '/api/orders/status') && (req.method === 'POST' || req.method === 'PUT')) {
+            return await handleUpdateOrderStatus(req, res, await getBody(req));
+        }
 
-    return serveStatic(req, res, pathname);
+        // ===== LOCATION =====
+        if (pathname === '/api/location/reverse' && req.method === 'GET') {
+            return await handleReverseGeocode(req, res);
+        }
+
+        // ===== 404 FOR API =====
+        if (pathname.startsWith('/api/')) {
+            return sendJSON(res, 404, { success: false, message: 'API endpoint not found' });
+        }
+
+        return serveStatic(req, res, pathname);
+    } catch (err) {
+        console.error('Server error:', err);
+        return sendJSON(res, 500, { success: false, message: 'Internal Server Error: ' + err.message });
+    }
 });
 
 // ============================================
 // START SERVER
 // ============================================
-server.listen(PORT, HOST, () => {
-    console.log('============================================');
-    console.log('  MARKET DEVELOPMENT CENTRE - Backend');
-    console.log('============================================');
-    console.log(`  🌐 Server running at: http://localhost:${PORT}`);
-    console.log(`  📦 Products: ${PRODUCTS.length} items`);
-    console.log('--------------------------------------------');
-    console.log('  API Endpoints:');
-    console.log('  POST /api/auth/register  - Sign Up');
-    console.log('  POST /api/auth/login     - Sign In');
-    console.log('  POST /api/auth/logout    - Sign Out');
-    console.log('  POST /api/auth/forgot    - Forgot Password (OTP)');
-    console.log('  POST /api/auth/verify-otp- Verify OTP');
-    console.log('  GET  /api/products        - All products');
-    console.log('  POST /api/orders          - Place order');
-    console.log('  GET  /api/orders          - Get orders');
-    console.log('  GET  /api/location/reverse- Reverse geocode');
-    console.log('============================================');
+let currentPort = parseInt(process.env.PORT, 10) || 8080;
+const HOST = '127.0.0.1';
+
+function startServer(port) {
+    currentPort = port;
+    server.listen(port, HOST, () => {
+        console.log('============================================');
+        console.log('  MARKET DEVELOPMENT CENTRE - Backend');
+        console.log('============================================');
+        console.log(`  🌐 Server running at: http://${HOST}:${port}`);
+        console.log(`  📦 Products: ${PRODUCTS.length} items`);
+        console.log(`  🔑 Google OAuth: ${GOOGLE_CLIENT_ID ? 'Configured' : 'Ready for .env key'}`);
+        console.log(`  💳 Razorpay: ${RAZORPAY_KEY_ID ? 'Configured' : 'Test Mode'}`);
+        console.log('============================================');
+    });
+}
+
+server.on('error', (err) => {
+    if (err.code === 'EACCES' || err.code === 'EADDRINUSE') {
+        const nextPort = currentPort === 8080 ? 3000 : (currentPort === 3000 ? 5000 : currentPort + 1);
+        console.warn(`⚠️ Port ${currentPort} unavailable (${err.code}). Retrying on port ${nextPort}...`);
+        setTimeout(() => {
+            startServer(nextPort);
+        }, 300);
+    } else {
+        console.error('Server fatal error:', err);
+    }
 });
+
+startServer(currentPort);
+

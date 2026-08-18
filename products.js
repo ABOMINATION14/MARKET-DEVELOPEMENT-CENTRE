@@ -1,105 +1,186 @@
 // ============================================
-// MARKET DEVELOPMENT CENTRE - Products Page
+// MARKET DEVELOPMENT CENTRE - Products Controller
 // ============================================
 
-// =============================
-// Display All Products
-// =============================
-function loadAllProducts(){
-    let container=document.getElementById("productList");
-    if(!container) return;
+let currentCategory = "all";
+let currentSearch = "";
+let loadedProducts = [];
 
-    container.innerHTML="";
+// Category Labels Mapping
+const CATEGORY_NAMES = {
+    all: "All Fresh Produce",
+    vegetable: "Fresh Vegetables",
+    fruit: "Farm Fresh Fruits",
+    dairy: "Dairy, Butter & Milk",
+    grocery: "Staples & Groceries",
+    drinks: "Cold Drinks & Juices"
+};
 
-products.forEach(p=>{
-        let stars="⭐".repeat(p.rating) + "☆".repeat(5-p.rating);
-        container.innerHTML += `
-        <div class="card" data-category="${p.category}" data-name="${p.name.toLowerCase()}">
-            <div class="weight-selector" id="ws-${p.id}">
-                <button class="weight-btn active" onclick="setWeight('${p.id}',1,'${p.unit}')">1 ${p.unit}</button>
-                <button class="weight-btn" onclick="setWeight('${p.id}',2,'${p.unit}')">2 ${p.unit}</button>
-                <button class="weight-btn" onclick="setWeight('${p.id}',5,'${p.unit}')">5 ${p.unit}</button>
-            </div>
-            <img src="${p.image}" alt="${p.name}">
-            <h3>${p.name}</h3>
-            <p class="price">${formatPrice(p.price)}</p>
-            <p class="desc">${p.desc}</p>
-            <p class="rating">${stars}</p>
-            <button onclick="addCartWeighted('${p.name}',${p.price},'ws-${p.id}')">
-                <i class="fa-solid fa-cart-plus"></i> Add To Cart
-            </button>
-        </div>`;
-    });
+// =============================
+// Fetch & Load Products
+// =============================
+async function fetchAndRenderProducts() {
+    const container = document.getElementById("productList");
+    const skeleton = document.getElementById("skeletonGrid");
+    if (!container) return;
+
+    if (skeleton) skeleton.style.display = "grid";
+    container.style.display = "none";
+
+    try {
+        const res = await fetch(API + '/api/products');
+        const data = await res.json();
+        if (data.success && data.products && data.products.length > 0) {
+            loadedProducts = data.products;
+        } else {
+            loadedProducts = products;
+        }
+    } catch (e) {
+        console.warn('Using offline products database:', e.message);
+        loadedProducts = products;
+    }
+
+    if (skeleton) skeleton.style.display = "none";
+    container.style.display = "grid";
+
+    renderProductCards(loadedProducts);
+    loadCategoryFromURL();
 }
 
 // =============================
-// Filter by Category
+// Render Product Cards with Steppers
 // =============================
-let currentCategory = "all";
-let currentSearch = "";
+function renderProductCards(items) {
+    const container = document.getElementById("productList");
+    if (!container) return;
 
-function filterCategory(){
-    let select=document.getElementById("category");
-    currentCategory = select ? select.value : "all";
+    container.innerHTML = "";
+
+    items.forEach(p => {
+        const stars = "⭐".repeat(p.rating || 5);
+        const qty = getCartItemQty(p.name);
+        const unit = p.unit || 'kg';
+        const img = p.image || 'images/vegetables.svg';
+
+        container.innerHTML += `
+        <div class="product-card-enhanced" data-category="${p.category}" data-name="${p.name.toLowerCase()}">
+            <div class="product-badge-time">
+                <i class="fa-solid fa-bolt" style="color:var(--orange)"></i> 10 MINS
+            </div>
+            <div class="product-image-wrap">
+                <img src="${img}" alt="${p.name}" loading="lazy">
+            </div>
+            <div class="product-title" title="${p.name}">${p.name}</div>
+            <div class="product-unit-text">1 ${unit} &bull; <span style="color:#10b981;">Farm Fresh</span></div>
+            <div class="product-pricing-row">
+                <div class="product-price-current">${formatPrice(p.price)}</div>
+                <div class="product-rating-pill">
+                    <i class="fa-solid fa-star" style="font-size:10px;"></i> ${p.rating || 5}
+                </div>
+            </div>
+            <div class="card-action-wrap" data-prod-name="${p.name}" data-prod-price="${p.price}" data-prod-unit="${unit}" data-prod-img="${img}">
+                ${qty > 0 ? `
+                    <div class="stepper-control">
+                        <button type="button" onclick="event.stopPropagation(); changeCartQty('${p.name}', -1, ${p.price}, '${unit}', '${img}')">-</button>
+                        <span class="stepper-count">${qty}</span>
+                        <button type="button" onclick="event.stopPropagation(); changeCartQty('${p.name}', 1, ${p.price}, '${unit}', '${img}')">+</button>
+                    </div>
+                ` : `
+                    <button type="button" class="card-add-btn" onclick="event.stopPropagation(); changeCartQty('${p.name}', 1, ${p.price}, '${unit}', '${img}')">
+                        <i class="fa-solid fa-plus"></i> ADD
+                    </button>
+                `}
+            </div>
+        </div>`;
+    });
+
     applyFilters();
 }
 
 // =============================
-// Apply both search and filter
+// Category Chip Selection
 // =============================
-function applyFilters(){
-    let cards=document.querySelectorAll("#productList .card");
-    let emptyMsg=document.getElementById("noResults");
-    let visibleCount=0;
+function selectCategory(cat, btn) {
+    currentCategory = cat;
 
-    cards.forEach(card=>{
-        let cat=card.getAttribute("data-category");
-        let name=card.getAttribute("data-name");
+    // Update active chip styling
+    document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+    if (btn) {
+        btn.classList.add('active');
+    } else {
+        const matchingBtn = document.querySelector(`.chip-btn[data-cat="${cat}"]`);
+        if (matchingBtn) matchingBtn.classList.add('active');
+    }
 
-        let catMatch = currentCategory==="all" || cat===currentCategory;
-        let searchMatch = !currentSearch || name.includes(currentSearch);
+    // Update Category Title
+    const titleEl = document.getElementById("pageCatTitle");
+    if (titleEl) {
+        titleEl.innerText = CATEGORY_NAMES[cat] || "Fresh Products";
+    }
 
-        if(catMatch && searchMatch){
-            card.style.display="block";
+    applyFilters();
+}
+
+// =============================
+// Filter & Search Logic
+// =============================
+function applyFilters() {
+    const cards = document.querySelectorAll("#productList .product-card-enhanced");
+    const emptyMsg = document.getElementById("noResults");
+    const countBadge = document.getElementById("productCountBadge");
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+        const cat = card.getAttribute("data-category");
+        const name = card.getAttribute("data-name");
+
+        const catMatch = currentCategory === "all" || cat === currentCategory;
+        const searchMatch = !currentSearch || name.includes(currentSearch);
+
+        if (catMatch && searchMatch) {
+            card.style.display = "flex";
             visibleCount++;
-        }else{
-            card.style.display="none";
+        } else {
+            card.style.display = "none";
         }
     });
 
-    if(emptyMsg){
-        emptyMsg.style.display = visibleCount===0 ? "block" : "none";
+    if (emptyMsg) {
+        emptyMsg.style.display = visibleCount === 0 ? "block" : "none";
+    }
+
+    if (countBadge) {
+        countBadge.innerText = `${visibleCount} item${visibleCount === 1 ? '' : 's'} available`;
     }
 }
 
-// Override searchProduct for products page
-function searchProduct(){
-    let input=document.getElementById("searchBox");
-    if(input){
-        currentSearch = input.value.trim().toLowerCase();
-        applyFilters();
+// Debounced Search Handler
+let searchTimer = null;
+function searchProduct() {
+    const input = document.getElementById("searchBox");
+    if (input) {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            currentSearch = input.value.trim().toLowerCase();
+            applyFilters();
+        }, 150);
     }
 }
 
 // =============================
-// Load category from URL
+// URL Parameter Sync
 // =============================
-function loadCategoryFromURL(){
-    let params=new URLSearchParams(window.location.search);
-    let cat=params.get("cat");
-    if(cat){
-        currentCategory=cat;
-        let select=document.getElementById("category");
-        if(select){
-            select.value=cat;
-        }
-        applyFilters();
+function loadCategoryFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get("cat");
+    if (cat && ["vegetable", "fruit", "dairy", "grocery", "drinks"].includes(cat)) {
+        selectCategory(cat, document.querySelector(`.chip-btn[data-cat="${cat}"]`));
     }
 }
 
 // =============================
 // Initialize
 // =============================
-loadAllProducts();
-loadCategoryFromURL();
-updateCartCount();
+document.addEventListener("DOMContentLoaded", () => {
+    fetchAndRenderProducts();
+});

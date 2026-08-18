@@ -1,44 +1,65 @@
 // ============================================
-// MARKET DEVELOPMENT CENTRE - Main Script
+// MARKET DEVELOPMENT CENTRE - Quick-Commerce Script
 // ============================================
 
+// API Base URL (relative or local)
+const API = (window.location.origin && !window.location.origin.startsWith('file:') && (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1')))
+    ? window.location.origin
+    : 'http://localhost:3000';
+
+// Global App Config
+window.APP_CONFIG = {
+    googleClientId: '',
+    razorpayKeyId: '',
+    hasGoogleAuth: false,
+    hasRazorpay: false
+};
+
 // =============================
-// API Base URL
+// Fetch Public Config
 // =============================
-const API = 'http://localhost:8080';
+async function fetchConfig() {
+    try {
+        const res = await fetch(API + '/api/config');
+        const data = await res.json();
+        if (data.success) {
+            window.APP_CONFIG = data;
+            console.log('⚙️ App Config Loaded');
+        }
+    } catch (e) {
+        console.warn('⚠️ Could not load remote config, using defaults');
+    }
+}
+fetchConfig();
 
 // =============================
 // Currency Formatter (INR ₹)
 // =============================
-function formatPrice(price){
-    return '₹' + Number(price).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+function formatPrice(price) {
+    return '₹' + Number(price).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // =============================
-// Auth Helper Functions
+// Auth & Role Helpers
 // =============================
-function getToken(){
+function getToken() {
     return localStorage.getItem('token');
 }
 
-function getCurrentUser(){
-    try{
+function getCurrentUser() {
+    try {
         return JSON.parse(localStorage.getItem('user'));
-    }catch(e){
+    } catch (e) {
         return null;
     }
 }
 
-function isLoggedIn(){
+function isLoggedIn() {
     return !!getToken();
 }
 
-// =============================
-// Auth Guard - redirect to login if not authenticated
-// =============================
-function requireAuth(){
-    if(!isLoggedIn()){
-        // Save the intended page so we can redirect back after login
+function requireAuth() {
+    if (!isLoggedIn()) {
         localStorage.setItem('redirectAfterLogin', window.location.pathname.split('/').pop());
         window.location.href = 'login.html';
         return false;
@@ -46,336 +67,541 @@ function requireAuth(){
     return true;
 }
 
-// =============================
-// Sign Out
-// =============================
-async function logout(){
-    try{
-        await fetch(API+'/api/auth/logout',{
-            method:'POST',
-            headers:{'Authorization':'Bearer '+getToken()}
+async function logout() {
+    try {
+        await fetch(API + '/api/auth/logout', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + getToken() }
         });
-    }catch(e){}
+    } catch (e) { }
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     showToast('👋 Signed out successfully!');
-    setTimeout(()=>{window.location.href='login.html';},1000);
+    setTimeout(() => { window.location.href = 'login.html'; }, 800);
+}
+
+// Update Nav UI based on current user & role
+function updateNavUserUI() {
+    const user = getCurrentUser();
+    const userLink = document.getElementById('userLink');
+    const userNameSpan = document.getElementById('userName');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    if (user && isLoggedIn()) {
+        const roleIcons = {
+            buyer: '🛒',
+            seller: '🏪',
+            delivery_partner: '🛵'
+        };
+        const roleBadge = roleIcons[user.role] || '👤';
+        const firstName = user.name ? user.name.split(' ')[0] : 'Profile';
+
+        if (userNameSpan) {
+            userNameSpan.innerHTML = `${roleBadge} ${firstName}`;
+        }
+        if (userLink) {
+            userLink.href = 'profile.html';
+        }
+        if (logoutBtn) {
+            logoutBtn.style.display = 'inline-block';
+        }
+    } else {
+        if (userNameSpan) userNameSpan.innerText = 'Sign In';
+        if (userLink) userLink.href = 'login.html';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+    }
 }
 
 // =============================
-// Product Database (INR ₹)
-// 41 products - wide variety of fruits & vegetables
+// Product Catalog (INR ₹)
 // =============================
 const products = [
     // ---- VEGETABLES ----
-    {id:1, name:"Tomato", price:40, category:"vegetable", image:"images/tomato.svg", desc:"Fresh juicy tomatoes", rating:5, unit:"kg"},
-    {id:2, name:"Potato", price:30, category:"vegetable", image:"images/potato.svg", desc:"Farm fresh potatoes", rating:5, unit:"kg"},
-    {id:3, name:"Carrot", price:60, category:"vegetable", image:"images/carrot.svg", desc:"Sweet crunchy carrots", rating:4, unit:"kg"},
-    {id:4, name:"Onion", price:45, category:"vegetable", image:"images/onion.svg", desc:"Fresh red onions", rating:5, unit:"kg"},
-    {id:5, name:"Brinjal", price:50, category:"vegetable", image:"images/vegetables.svg", desc:"Fresh purple brinjals", rating:4, unit:"kg"},
-    {id:6, name:"Ladies Finger", price:55, category:"vegetable", image:"images/vegetables.svg", desc:"Tender okra", rating:4, unit:"kg"},
-    {id:7, name:"Cabbage", price:35, category:"vegetable", image:"images/vegetables.svg", desc:"Fresh green cabbage", rating:4, unit:"piece"},
-    {id:8, name:"Cauliflower", price:45, category:"vegetable", image:"images/vegetables.svg", desc:"White fresh cauliflower", rating:4, unit:"piece"},
-    {id:9, name:"Capsicum", price:70, category:"vegetable", image:"images/vegetables.svg", desc:"Crispy green capsicum", rating:4, unit:"kg"},
-    {id:10, name:"Spinach", price:25, category:"vegetable", image:"images/vegetables.svg", desc:"Fresh leafy spinach", rating:4, unit:"bunch"},
-    {id:11, name:"Coriander", price:20, category:"vegetable", image:"images/vegetables.svg", desc:"Fresh coriander leaves", rating:4, unit:"bunch"},
-    {id:12, name:"Beans", price:65, category:"vegetable", image:"images/vegetables.svg", desc:"Fresh green beans", rating:4, unit:"kg"},
-    {id:13, name:"Pumpkin", price:30, category:"vegetable", image:"images/vegetables.svg", desc:"Fresh orange pumpkin", rating:4, unit:"kg"},
-    {id:14, name:"Radish", price:40, category:"vegetable", image:"images/vegetables.svg", desc:"Crispy white radish", rating:4, unit:"kg"},
-    {id:15, name:"Beetroot", price:55, category:"vegetable", image:"images/vegetables.svg", desc:"Sweet red beetroot", rating:4, unit:"kg"},
-    {id:16, name:"Cucumber", price:35, category:"vegetable", image:"images/vegetables.svg", desc:"Cool fresh cucumber", rating:4, unit:"kg"},
-    {id:17, name:"Green Chilli", price:30, category:"vegetable", image:"images/vegetables.svg", desc:"Fresh green chillies", rating:4, unit:"kg"},
+    { id: 1, name: "Tomato", price: 40, category: "vegetable", image: "images/tomato.svg", desc: "Fresh juicy tomatoes", rating: 5, unit: "kg" },
+    { id: 2, name: "Potato", price: 30, category: "vegetable", image: "images/potato.svg", desc: "Farm fresh potatoes", rating: 5, unit: "kg" },
+    { id: 3, name: "Carrot", price: 60, category: "vegetable", image: "images/carrot.svg", desc: "Sweet crunchy carrots", rating: 4, unit: "kg" },
+    { id: 4, name: "Onion", price: 45, category: "vegetable", image: "images/onion.svg", desc: "Fresh red onions", rating: 5, unit: "kg" },
+    { id: 5, name: "Brinjal", price: 50, category: "vegetable", image: "images/vegetables.svg", desc: "Fresh purple brinjals", rating: 4, unit: "kg" },
+    { id: 6, name: "Ladies Finger", price: 55, category: "vegetable", image: "images/vegetables.svg", desc: "Tender okra", rating: 4, unit: "kg" },
+    { id: 7, name: "Cabbage", price: 35, category: "vegetable", image: "images/vegetables.svg", desc: "Fresh green cabbage", rating: 4, unit: "piece" },
+    { id: 8, name: "Cauliflower", price: 45, category: "vegetable", image: "images/vegetables.svg", desc: "White fresh cauliflower", rating: 4, unit: "piece" },
+    { id: 9, name: "Capsicum", price: 70, category: "vegetable", image: "images/vegetables.svg", desc: "Crispy green capsicum", rating: 4, unit: "kg" },
+    { id: 10, name: "Spinach", price: 25, category: "vegetable", image: "images/vegetables.svg", desc: "Fresh leafy spinach", rating: 4, unit: "bunch" },
+    { id: 11, name: "Coriander", price: 20, category: "vegetable", image: "images/vegetables.svg", desc: "Fresh coriander leaves", rating: 4, unit: "bunch" },
+    { id: 12, name: "Beans", price: 65, category: "vegetable", image: "images/vegetables.svg", desc: "Fresh green beans", rating: 4, unit: "kg" },
+    { id: 13, name: "Pumpkin", price: 30, category: "vegetable", image: "images/vegetables.svg", desc: "Fresh orange pumpkin", rating: 4, unit: "kg" },
+    { id: 14, name: "Radish", price: 40, category: "vegetable", image: "images/vegetables.svg", desc: "Crispy white radish", rating: 4, unit: "kg" },
+    { id: 15, name: "Beetroot", price: 55, category: "vegetable", image: "images/vegetables.svg", desc: "Sweet red beetroot", rating: 4, unit: "kg" },
+    { id: 16, name: "Cucumber", price: 35, category: "vegetable", image: "images/vegetables.svg", desc: "Cool fresh cucumber", rating: 4, unit: "kg" },
+    { id: 17, name: "Green Chilli", price: 30, category: "vegetable", image: "images/vegetables.svg", desc: "Fresh green chillies", rating: 4, unit: "kg" },
 
     // ---- FRUITS ----
-    {id:18, name:"Apple", price:200, category:"fruit", image:"images/apple.svg", desc:"Crisp red apples", rating:5, unit:"kg"},
-    {id:19, name:"Banana", price:60, category:"fruit", image:"images/banana.svg", desc:"Sweet ripe bananas", rating:4, unit:"bunch"},
-    {id:20, name:"Mango", price:150, category:"fruit", image:"images/fruits.svg", desc:"Juicy alphonso mangoes", rating:5, unit:"kg"},
-    {id:21, name:"Orange", price:80, category:"fruit", image:"images/fruits.svg", desc:"Sweet juicy oranges", rating:5, unit:"kg"},
-    {id:22, name:"Grapes", price:120, category:"fruit", image:"images/fruits.svg", desc:"Fresh green grapes", rating:4, unit:"kg"},
-    {id:23, name:"Watermelon", price:35, category:"fruit", image:"images/fruits.svg", desc:"Sweet red watermelon", rating:4, unit:"kg"},
-    {id:24, name:"Pomegranate", price:180, category:"fruit", image:"images/fruits.svg", desc:"Fresh red pomegranate", rating:5, unit:"kg"},
-    {id:25, name:"Papaya", price:50, category:"fruit", image:"images/fruits.svg", desc:"Ripe sweet papaya", rating:4, unit:"kg"},
-    {id:26, name:"Pineapple", price:70, category:"fruit", image:"images/fruits.svg", desc:"Sweet ripe pineapple", rating:4, unit:"piece"},
-    {id:27, name:"Strawberry", price:250, category:"fruit", image:"images/fruits.svg", desc:"Fresh red strawberries", rating:5, unit:"box"},
-    {id:28, name:"Guava", price:60, category:"fruit", image:"images/fruits.svg", desc:"Fresh green guava", rating:4, unit:"kg"},
-    {id:29, name:"Pears", price:160, category:"fruit", image:"images/fruits.svg", desc:"Sweet juicy pears", rating:4, unit:"kg"},
+    { id: 18, name: "Apple", price: 200, category: "fruit", image: "images/apple.svg", desc: "Crisp red apples", rating: 5, unit: "kg" },
+    { id: 19, name: "Banana", price: 60, category: "fruit", image: "images/banana.svg", desc: "Sweet ripe bananas", rating: 4, unit: "bunch" },
+    { id: 20, name: "Mango", price: 150, category: "fruit", image: "images/fruits.svg", desc: "Juicy alphonso mangoes", rating: 5, unit: "kg" },
+    { id: 21, name: "Orange", price: 80, category: "fruit", image: "images/fruits.svg", desc: "Sweet juicy oranges", rating: 5, unit: "kg" },
+    { id: 22, name: "Grapes", price: 120, category: "fruit", image: "images/fruits.svg", desc: "Fresh green grapes", rating: 4, unit: "kg" },
+    { id: 23, name: "Watermelon", price: 35, category: "fruit", image: "images/fruits.svg", desc: "Sweet red watermelon", rating: 4, unit: "kg" },
+    { id: 24, name: "Pomegranate", price: 180, category: "fruit", image: "images/fruits.svg", desc: "Fresh red pomegranate", rating: 5, unit: "kg" },
+    { id: 25, name: "Papaya", price: 50, category: "fruit", image: "images/fruits.svg", desc: "Ripe sweet papaya", rating: 4, unit: "kg" },
+    { id: 26, name: "Pineapple", price: 70, category: "fruit", image: "images/fruits.svg", desc: "Sweet ripe pineapple", rating: 4, unit: "piece" },
+    { id: 27, name: "Strawberry", price: 250, category: "fruit", image: "images/fruits.svg", desc: "Fresh red strawberries", rating: 5, unit: "box" },
+    { id: 28, name: "Guava", price: 60, category: "fruit", image: "images/fruits.svg", desc: "Fresh green guava", rating: 4, unit: "kg" },
+    { id: 29, name: "Pears", price: 160, category: "fruit", image: "images/fruits.svg", desc: "Sweet juicy pears", rating: 4, unit: "kg" },
 
     // ---- DAIRY ----
-    {id:30, name:"Milk", price:60, category:"dairy", image:"images/milk.svg", desc:"Pure fresh milk (1L)", rating:5, unit:"litre"},
-    {id:31, name:"Curd", price:40, category:"dairy", image:"images/curd.svg", desc:"Creamy fresh curd", rating:4, unit:"cup"},
-    {id:32, name:"Butter", price:55, category:"dairy", image:"images/dairy.svg", desc:"Fresh creamy butter", rating:4, unit:"pack"},
-    {id:33, name:"Paneer", price:200, category:"dairy", image:"images/dairy.svg", desc:"Fresh soft paneer", rating:5, unit:"kg"},
-    {id:34, name:"Cheese", price:150, category:"dairy", image:"images/dairy.svg", desc:"Processed cheese slices", rating:4, unit:"pack"},
+    { id: 30, name: "Milk", price: 60, category: "dairy", image: "images/milk.svg", desc: "Pure fresh milk (1L)", rating: 5, unit: "litre" },
+    { id: 31, name: "Curd", price: 40, category: "dairy", image: "images/curd.svg", desc: "Creamy fresh curd", rating: 4, unit: "cup" },
+    { id: 32, name: "Butter", price: 55, category: "dairy", image: "images/dairy.svg", desc: "Fresh creamy butter", rating: 4, unit: "pack" },
+    { id: 33, name: "Paneer", price: 200, category: "dairy", image: "images/dairy.svg", desc: "Fresh soft paneer", rating: 5, unit: "kg" },
+    { id: 34, name: "Cheese", price: 150, category: "dairy", image: "images/dairy.svg", desc: "Processed cheese slices", rating: 4, unit: "pack" },
 
     // ---- GROCERIES ----
-    {id:35, name:"Rice", price:80, category:"grocery", image:"images/rice.svg", desc:"Premium basmati rice", rating:5, unit:"kg"},
-    {id:36, name:"Wheat", price:50, category:"grocery", image:"images/wheat.svg", desc:"Whole wheat grains", rating:4, unit:"kg"},
-    {id:37, name:"Sugar", price:45, category:"grocery", image:"images/snacks.svg", desc:"Fine white sugar", rating:4, unit:"kg"},
-    {id:38, name:"Dal", price:120, category:"grocery", image:"images/snacks.svg", desc:"Premium toor dal", rating:4, unit:"kg"},
+    { id: 35, name: "Rice", price: 80, category: "grocery", image: "images/rice.svg", desc: "Premium basmati rice", rating: 5, unit: "kg" },
+    { id: 36, name: "Wheat", price: 50, category: "grocery", image: "images/wheat.svg", desc: "Whole wheat grains", rating: 4, unit: "kg" },
+    { id: 37, name: "Sugar", price: 45, category: "grocery", image: "images/snacks.svg", desc: "Fine white sugar", rating: 4, unit: "kg" },
+    { id: 38, name: "Dal", price: 120, category: "grocery", image: "images/snacks.svg", desc: "Premium toor dal", rating: 4, unit: "kg" },
 
     // ---- DRINKS ----
-    {id:39, name:"Orange Juice", price:90, category:"drinks", image:"images/juice.svg", desc:"Fresh orange juice", rating:5, unit:"bottle"},
-    {id:40, name:"Cold Drink", price:40, category:"drinks", image:"images/drink.svg", desc:"Refreshing cold drink", rating:4, unit:"bottle"},
-    {id:41, name:"Coconut Water", price:50, category:"drinks", image:"images/drink.svg", desc:"Fresh tender coconut water", rating:5, unit:"bottle"}
+    { id: 39, name: "Orange Juice", price: 90, category: "drinks", image: "images/juice.svg", desc: "Fresh orange juice", rating: 5, unit: "bottle" },
+    { id: 40, name: "Cold Drink", price: 40, category: "drinks", image: "images/drink.svg", desc: "Refreshing cold drink", rating: 4, unit: "bottle" },
+    { id: 41, name: "Coconut Water", price: 50, category: "drinks", image: "images/drink.svg", desc: "Fresh tender coconut water", rating: 5, unit: "bottle" }
 ];
 
 // =============================
-// Load Cart
+// Cart State Management
 // =============================
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-// =============================
-// Update Cart Counter
-// =============================
-function updateCartCount(){
-    let count=document.getElementById("cartCount");
-    if(count){
-        let totalQty = cart.reduce((sum,item)=>sum+item.qty,0);
-        count.innerHTML=totalQty;
-    }
-}
-
-// =============================
-// Add Product to Cart
-// =============================
-function addCart(name,price){
-    let item={name:name, price:price, qty:1};
-    let exist=cart.find(p=>p.name===name);
-    if(exist){
-        exist.qty++;
-    }else{
-        cart.push(item);
-    }
-    localStorage.setItem("cart",JSON.stringify(cart));
+function saveCart() {
+    localStorage.setItem("cart", JSON.stringify(cart));
     updateCartCount();
-    showToast(name + " added to cart 🛒");
-}
-
-// =============================
-// Toast Notification (user friendly)
-// =============================
-function showToast(message){
-    let toast=document.getElementById("toast");
-    if(!toast){
-        toast=document.createElement("div");
-        toast.id="toast";
-        toast.style.cssText="position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#2e7d32;color:#fff;padding:16px 30px;border-radius:35px;font-size:18px;z-index:9999;box-shadow:0 5px 20px rgba(0,0,0,.3);transition:.4s;opacity:0;";
-        document.body.appendChild(toast);
+    renderCartDrawer();
+    syncAllCardSteppers();
+    if (typeof displayCart === 'function') {
+        displayCart();
     }
-    toast.innerHTML=message;
-    toast.style.opacity="1";
-    setTimeout(()=>{toast.style.opacity="0";},2500);
+}
+
+function getCartItem(name) {
+    return cart.find(p => p.name.toLowerCase() === name.toLowerCase());
+}
+
+function getCartItemQty(name) {
+    const item = getCartItem(name);
+    return item ? item.qty : 0;
+}
+
+// Update Cart Count Badges with Pop Animation
+function updateCartCount() {
+    const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+    const badges = document.querySelectorAll('#cartCount, #drawerCartCount');
+
+    badges.forEach(b => {
+        b.innerText = totalQty;
+        b.classList.remove('badge-pop');
+        void b.offsetWidth; // Trigger reflow
+        b.classList.add('badge-pop');
+    });
+}
+
+// Add or change quantity
+function changeCartQty(name, delta, price, unit, image) {
+    const exist = cart.find(p => p.name.toLowerCase() === name.toLowerCase());
+    const prodRef = products.find(p => p.name.toLowerCase() === name.toLowerCase());
+
+    const itemPrice = price || (prodRef ? prodRef.price : 40);
+    const itemUnit = unit || (prodRef ? prodRef.unit : 'kg');
+    const itemImage = image || (prodRef ? prodRef.image : 'images/vegetables.svg');
+
+    if (exist) {
+        exist.qty += delta;
+        if (exist.qty <= 0) {
+            cart = cart.filter(p => p.name.toLowerCase() !== name.toLowerCase());
+            showToast(`${name} removed from cart`);
+        } else if (delta > 0) {
+            showToast(`Added 1 more ${name} 🛒`);
+        }
+    } else if (delta > 0) {
+        cart.push({
+            name: name,
+            price: itemPrice,
+            qty: delta,
+            unit: itemUnit,
+            image: itemImage
+        });
+        showToast(`${name} added to cart 🛒`);
+    }
+
+    saveCart();
+}
+
+function addCart(name, price) {
+    changeCartQty(name, 1, price);
 }
 
 // =============================
-// Search Product
+// Card Quantity Stepper Sync
 // =============================
-function searchProduct(){
-    let input=document.getElementById("searchBox").value.trim().toLowerCase();
-    let cards=document.querySelectorAll(".card, .product-card");
-    cards.forEach(card=>{
-        let product=card.querySelector("h3") ? card.querySelector("h3").innerText.toLowerCase() : "";
-        if(product.includes(input)){
-            card.style.display="block";
-        }else{
-            card.style.display="none";
+function syncAllCardSteppers() {
+    const actionWraps = document.querySelectorAll('.card-action-wrap[data-prod-name]');
+    actionWraps.forEach(wrap => {
+        const prodName = wrap.getAttribute('data-prod-name');
+        const prodPrice = Number(wrap.getAttribute('data-prod-price')) || 0;
+        const prodUnit = wrap.getAttribute('data-prod-unit') || 'kg';
+        const prodImg = wrap.getAttribute('data-prod-img') || '';
+        const qty = getCartItemQty(prodName);
+
+        if (qty > 0) {
+            wrap.innerHTML = `
+                <div class="stepper-control">
+                    <button type="button" onclick="event.stopPropagation(); changeCartQty('${prodName}', -1, ${prodPrice}, '${prodUnit}', '${prodImg}')">-</button>
+                    <span class="stepper-count">${qty}</span>
+                    <button type="button" onclick="event.stopPropagation(); changeCartQty('${prodName}', 1, ${prodPrice}, '${prodUnit}', '${prodImg}')">+</button>
+                </div>
+            `;
+        } else {
+            wrap.innerHTML = `
+                <button type="button" class="card-add-btn" onclick="event.stopPropagation(); changeCartQty('${prodName}', 1, ${prodPrice}, '${prodUnit}', '${prodImg}')">
+                    <i class="fa-solid fa-plus"></i> ADD
+                </button>
+            `;
         }
     });
-    let emptyMsg=document.getElementById("noResults");
-    let visible=[...cards].filter(c=>c.style.display!=="none");
-    if(emptyMsg){
-        emptyMsg.style.display = visible.length===0 ? "block" : "none";
-    }
 }
 
 // =============================
-// Voice Search (for less educated users)
+// Quick Cart Drawer Component
 // =============================
-function voiceSearch(){
-    if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
-        alert("Sorry, your browser does not support voice search. Please type the product name.");
+function injectCartDrawer() {
+    if (document.getElementById('cartDrawer')) return;
+
+    const drawerHTML = `
+        <div class="cart-drawer-overlay" id="cartDrawerOverlay" onclick="closeCartDrawer()"></div>
+        <div class="cart-drawer" id="cartDrawer">
+            <div class="cart-drawer-header">
+                <h3><i class="fa-solid fa-bag-shopping" style="color:var(--green)"></i> My Cart (<span id="drawerCartCount">0</span>)</h3>
+                <button class="cart-drawer-close" onclick="closeCartDrawer()" title="Close Cart"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="delivery-meter" id="drawerDeliveryMeter">
+                <div id="drawerMeterText">Add ₹500 for <strong>FREE Delivery</strong></div>
+                <div class="delivery-meter-bar">
+                    <div class="delivery-meter-fill" id="drawerMeterFill" style="width: 0%;"></div>
+                </div>
+            </div>
+            <div class="cart-drawer-items" id="drawerItemsList">
+                <!-- Injected by JS -->
+            </div>
+            <div class="cart-drawer-footer">
+                <div class="drawer-summary-row">
+                    <span>Item Total</span>
+                    <span id="drawerSubtotal">₹0.00</span>
+                </div>
+                <div class="drawer-summary-row">
+                    <span>Delivery Fee</span>
+                    <span id="drawerDeliveryFee">₹40.00</span>
+                </div>
+                <div class="drawer-summary-row total">
+                    <span>To Pay</span>
+                    <span id="drawerGrandTotal">₹0.00</span>
+                </div>
+                <button class="drawer-checkout-btn" onclick="goToCheckout()">
+                    Proceed to Checkout <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', drawerHTML);
+
+    // Attach click events on navbar cart icons to toggle drawer
+    document.querySelectorAll('.icons a[href="cart.html"], nav ul li a[href="cart.html"]').forEach(el => {
+        // If current page is NOT cart.html, open drawer
+        if (!window.location.pathname.endsWith('cart.html')) {
+            el.addEventListener('click', (e) => {
+                e.preventDefault();
+                openCartDrawer();
+            });
+        }
+    });
+}
+
+function openCartDrawer() {
+    injectCartDrawer();
+    renderCartDrawer();
+    const overlay = document.getElementById('cartDrawerOverlay');
+    const drawer = document.getElementById('cartDrawer');
+    if (overlay && drawer) {
+        overlay.classList.add('open');
+        drawer.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeCartDrawer() {
+    const overlay = document.getElementById('cartDrawerOverlay');
+    const drawer = document.getElementById('cartDrawer');
+    if (overlay && drawer) {
+        overlay.classList.remove('open');
+        drawer.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+}
+
+function renderCartDrawer() {
+    const list = document.getElementById('drawerItemsList');
+    if (!list) return;
+
+    if (cart.length === 0) {
+        list.innerHTML = `
+            <div style="text-align:center;padding:40px 10px;color:#888;">
+                <i class="fa-solid fa-cart-shopping" style="font-size:48px;color:#d1d5db;margin-bottom:12px;"></i>
+                <h4 style="color:#374151;font-size:16px;">Your cart is empty</h4>
+                <p style="font-size:13px;margin-top:4px;">Add some fresh fruits & vegetables!</p>
+            </div>
+        `;
+        document.getElementById('drawerSubtotal').innerText = '₹0.00';
+        document.getElementById('drawerDeliveryFee').innerText = '₹0.00';
+        document.getElementById('drawerGrandTotal').innerText = '₹0.00';
+        document.getElementById('drawerMeterFill').style.width = '0%';
+        document.getElementById('drawerMeterText').innerHTML = 'Add items for <strong>FREE Delivery</strong>';
+        return;
+    }
+
+    let subtotal = 0;
+    list.innerHTML = '';
+
+    cart.forEach(item => {
+        const itemTotal = item.price * item.qty;
+        subtotal += itemTotal;
+        const img = item.image || 'images/vegetables.svg';
+
+        list.innerHTML += `
+            <div class="drawer-item">
+                <img src="${img}" alt="${item.name}">
+                <div class="drawer-item-info">
+                    <h4>${item.name}</h4>
+                    <div class="drawer-item-price">${formatPrice(item.price)} <span class="drawer-item-unit">/ ${item.unit || 'kg'}</span></div>
+                </div>
+                <div class="drawer-stepper">
+                    <button type="button" onclick="changeCartQty('${item.name}', -1, ${item.price}, '${item.unit || 'kg'}', '${img}')">-</button>
+                    <span>${item.qty}</span>
+                    <button type="button" onclick="changeCartQty('${item.name}', 1, ${item.price}, '${item.unit || 'kg'}', '${img}')">+</button>
+                </div>
+                <button class="drawer-item-del" onclick="changeCartQty('${item.name}', -${item.qty})" title="Remove">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        `;
+    });
+
+    const deliveryFee = subtotal >= 500 ? 0 : 40;
+    const grandTotal = subtotal + deliveryFee;
+
+    document.getElementById('drawerSubtotal').innerText = formatPrice(subtotal);
+    document.getElementById('drawerDeliveryFee').innerText = deliveryFee === 0 ? 'FREE' : formatPrice(deliveryFee);
+    document.getElementById('drawerGrandTotal').innerText = formatPrice(grandTotal);
+
+    // Update progress meter
+    const meterFill = document.getElementById('drawerMeterFill');
+    const meterText = document.getElementById('drawerMeterText');
+    if (subtotal >= 500) {
+        meterFill.style.width = '100%';
+        meterFill.style.background = '#22c55e';
+        meterText.innerHTML = '🎉 You unlocked <strong>FREE Delivery!</strong>';
+    } else {
+        const diff = 500 - subtotal;
+        const pct = Math.min(100, Math.round((subtotal / 500) * 100));
+        meterFill.style.width = `${pct}%`;
+        meterFill.style.background = 'var(--lightgreen)';
+        meterText.innerHTML = `Add <strong>₹${diff}</strong> more for <strong>FREE Delivery</strong>`;
+    }
+}
+
+function goToCheckout() {
+    if (cart.length === 0) {
+        showToast('Your cart is empty!');
+        return;
+    }
+    closeCartDrawer();
+    window.location.href = 'checkout.html';
+}
+
+// =============================
+// Toast Notification System
+// =============================
+function showToast(message) {
+    let toast = document.getElementById("toast");
+    if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "toast";
+        toast.style.cssText = "position:fixed;bottom:25px;left:50%;transform:translateX(-50%) translateY(20px);background:#1f2937;color:#fff;padding:12px 24px;border-radius:30px;font-size:15px;font-weight:500;z-index:99999;box-shadow:0 8px 25px rgba(0,0,0,.25);transition:all 0.25s cubic-bezier(0.16,1,0.3,1);opacity:0;pointer-events:none;display:flex;align-items:center;gap:8px;";
+        document.body.appendChild(toast);
+    }
+    toast.innerHTML = message;
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(-50%) translateY(0)";
+
+    clearTimeout(window._toastTimeout);
+    window._toastTimeout = setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(-50%) translateY(20px)";
+    }, 2500);
+}
+
+// =============================
+// Voice Search Support
+// =============================
+function voiceSearch() {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        showToast("⚠️ Voice search not supported in this browser. Please type.");
         return;
     }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
+    recognition.lang = 'en-IN';
     recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
 
-    let input=document.getElementById("searchBox");
-    input.value = "🎤 Listening...";
-    input.style.borderColor="red";
+    const input = document.getElementById("searchBox");
+    if (input) input.placeholder = "🎤 Listening for produce name...";
 
     recognition.start();
 
-    recognition.onresult = function(event){
-        let text = event.results[0][0].transcript;
-        input.value = text;
-        input.style.borderColor="#2e7d32";
-        searchProduct();
-        showToast("You searched for: " + text);
+    recognition.onresult = function (event) {
+        const text = event.results[0][0].transcript;
+        if (input) {
+            input.value = text;
+            input.placeholder = "Search products...";
+            if (typeof searchProduct === 'function') {
+                searchProduct();
+            }
+        }
+        showToast("🔍 Searched: " + text);
     };
 
-    recognition.onerror = function(){
-        input.value = "";
-        input.style.borderColor="#2e7d32";
-        alert("Could not hear you. Please try again or type.");
+    recognition.onerror = function () {
+        if (input) input.placeholder = "Search products...";
+        showToast("⚠️ Could not hear audio. Please try again.");
     };
 }
 
 // =============================
-// Display Featured Products
+// Featured Products Loader for Index
 // =============================
-function loadFeatured(){
-    let grid=document.getElementById("featuredGrid");
-    if(!grid) return;
-    let featured=products.slice(0,12);
-    grid.innerHTML="";
-featured.forEach(p=>{
-        let stars="⭐".repeat(p.rating) + "☆".repeat(5-p.rating);
+function loadFeatured() {
+    const grid = document.getElementById("featuredGrid");
+    if (!grid) return;
+
+    const featured = products.slice(0, 12);
+    grid.innerHTML = "";
+
+    featured.forEach(p => {
+        const stars = "⭐".repeat(p.rating);
+        const qty = getCartItemQty(p.name);
         grid.innerHTML += `
         <div class="card" data-category="${p.category}" data-name="${p.name.toLowerCase()}">
-            <div class="weight-selector" id="ws-${p.id}">
-                <button class="weight-btn active" onclick="setWeight('${p.id}',1,'${p.unit}')">1 ${p.unit}</button>
-                <button class="weight-btn" onclick="setWeight('${p.id}',2,'${p.unit}')">2 ${p.unit}</button>
-                <button class="weight-btn" onclick="setWeight('${p.id}',5,'${p.unit}')">5 ${p.unit}</button>
-            </div>
-            <img src="${p.image}" alt="${p.name}">
+            <span class="tag">Fresh</span>
+            <img src="${p.image}" alt="${p.name}" loading="lazy">
             <h3>${p.name}</h3>
-            <p class="price">${formatPrice(p.price)}</p>
+            <p class="price">${formatPrice(p.price)} <small style="font-size:13px;color:#888;">/ ${p.unit}</small></p>
             <p class="desc">${p.desc}</p>
             <p class="rating">${stars}</p>
-            <button onclick="addCartWeighted('${p.name}',${p.price},'ws-${p.id}')">
-                <i class="fa-solid fa-cart-plus"></i> Add To Cart
-            </button>
+            <div class="card-action-wrap" data-prod-name="${p.name}" data-prod-price="${p.price}" data-prod-unit="${p.unit}" data-prod-img="${p.image}">
+                ${qty > 0 ? `
+                    <div class="stepper-control">
+                        <button type="button" onclick="event.stopPropagation(); changeCartQty('${p.name}', -1, ${p.price}, '${p.unit}', '${p.image}')">-</button>
+                        <span class="stepper-count">${qty}</span>
+                        <button type="button" onclick="event.stopPropagation(); changeCartQty('${p.name}', 1, ${p.price}, '${p.unit}', '${p.image}')">+</button>
+                    </div>
+                ` : `
+                    <button type="button" class="card-add-btn" onclick="event.stopPropagation(); changeCartQty('${p.name}', 1, ${p.price}, '${p.unit}', '${p.image}')">
+                        <i class="fa-solid fa-plus"></i> ADD
+                    </button>
+                `}
+            </div>
         </div>`;
     });
 }
 
 // =============================
-// Weight Selector (customer chooses weight)
-// =============================
-function setWeight(id, qty, unit){
-    let container=document.getElementById('ws-'+id);
-    if(!container) return;
-    let buttons=container.querySelectorAll('.weight-btn');
-    buttons.forEach(btn=>btn.classList.remove('active'));
-    event.target.classList.add('active');
-    container.setAttribute('data-qty',qty);
-    container.setAttribute('data-unit',unit);
-}
-
-// Add to cart with selected weight/qty
-function addCartWeighted(name, price, weightId){
-    let container=document.getElementById(weightId);
-    let qty = container ? parseInt(container.getAttribute('data-qty')) || 1 : 1;
-    let unit = container ? (container.getAttribute('data-unit') || 'kg') : 'kg';
-
-    let item={name:name, price:price, qty:qty, unit:unit};
-    let exist=cart.find(p=>p.name===name);
-    if(exist){
-        exist.qty += qty;
-    }else{
-        cart.push(item);
-    }
-    localStorage.setItem("cart",JSON.stringify(cart));
-    updateCartCount();
-    showToast(name + " (" + qty + " " + unit + ") added to cart 🛒");
-}
-
-// =============================
-// Offer
-// =============================
-function offer(){
-    let coupon = "FRESH20";
-    showToast("🎉 You got 20% OFF! Use code: " + coupon);
-    localStorage.setItem("coupon",coupon);
-}
-
-// =============================
 // Toggle Mobile Menu
 // =============================
-function toggleMenu(){
-    let ul=document.querySelector("nav ul");
-    if(ul.style.display==="flex"){
-        ul.style.display="none";
-    }else{
-        ul.style.display="flex";
-        ul.style.flexDirection="column";
-        ul.style.width="100%";
+function toggleMenu() {
+    const ul = document.querySelector("nav ul");
+    if (ul) {
+        ul.style.display = ul.style.display === "flex" ? "none" : "flex";
+        if (ul.style.display === "flex") {
+            ul.style.flexDirection = "column";
+            ul.style.width = "100%";
+        }
     }
 }
 
 // =============================
-// Live Location (Zepto style)
+// Location & Geocoding
 // =============================
-function detectLocation(){
-    let locText=document.getElementById('locText');
-    if(!locText) return;
+function detectLocation() {
+    const locText = document.getElementById('locText');
+    if (!locText) return;
 
-    if(!navigator.geolocation){
-        locText.innerHTML='<strong>Location not supported</strong> - Please enter address manually';
+    if (!navigator.geolocation) {
+        locText.innerHTML = '<strong>Location not supported</strong>';
         return;
     }
 
-    locText.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Detecting your location...';
+    locText.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Detecting location...';
 
-    navigator.geolocation.getCurrentPosition(async (position)=>{
-        let lat=position.coords.latitude;
-        let lng=position.coords.longitude;
+    navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
 
-        try{
-            let res=await fetch(API+'/api/location/reverse?lat='+lat+'&lng='+lng);
-            let data=await res.json();
-            if(data.success){
-                locText.innerHTML='Deliver to: <strong>'+data.address+'</strong>';
-                localStorage.setItem('deliveryLocation',JSON.stringify({lat,lng,address:data.address}));
-
-                // Also update checkout address if present
-                let addrInput=document.getElementById('address');
-                if(addrInput){
-                    addrInput.value=data.address;
-                }
-                showToast('📍 Location detected!');
-            }else{
-                locText.innerHTML='<strong>Location detected</strong> - '+data.message;
+        try {
+            const res = await fetch(API + `/api/location/reverse?lat=${lat}&lng=${lng}`);
+            const data = await res.json();
+            if (data.success) {
+                locText.innerHTML = `Deliver to: <strong>${data.address}</strong>`;
+                localStorage.setItem('deliveryLocation', JSON.stringify({ lat, lng, address: data.address }));
+                const addrInput = document.getElementById('address');
+                if (addrInput) addrInput.value = data.address;
+                showToast('📍 Location updated!');
             }
-        }catch(e){
-            locText.innerHTML='<strong>Deliver to: '+lat.toFixed(4)+', '+lng.toFixed(4)+'</strong>';
-            localStorage.setItem('deliveryLocation',JSON.stringify({lat,lng,address:lat.toFixed(4)+', '+lng.toFixed(4)}));
-            showToast('📍 Location detected!');
+        } catch (e) {
+            locText.innerHTML = `Deliver to: <strong>Sector 14 (${lat.toFixed(2)}, ${lng.toFixed(2)})</strong>`;
+            localStorage.setItem('deliveryLocation', JSON.stringify({ lat, lng, address: `Sector 14 (${lat.toFixed(2)}, ${lng.toFixed(2)})` }));
+            showToast('📍 Location updated!');
         }
-    }, (error)=>{
-        locText.innerHTML='<strong>Location access denied</strong> - Please enter address manually';
-        showToast('⚠️ Enable location access or enter address manually');
+    }, () => {
+        locText.innerHTML = 'Deliver to: <strong>Select location</strong>';
+        showToast('⚠️ Please allow location access or enter address');
     });
 }
 
-// Load saved location on page load
-function loadLocation(){
-    let locText=document.getElementById('locText');
-    if(!locText) return;
-    let saved=localStorage.getItem('deliveryLocation');
-    if(saved){
-        try{
-            let data=JSON.parse(saved);
-            locText.innerHTML='Deliver to: <strong>'+data.address+'</strong>';
-        }catch(e){}
-    }else{
-        locText.innerHTML='Deliver to: <strong>Select location</strong>';
+function loadLocation() {
+    const locText = document.getElementById('locText');
+    if (!locText) return;
+    const saved = localStorage.getItem('deliveryLocation');
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            locText.innerHTML = `Deliver to: <strong>${data.address}</strong>`;
+        } catch (e) { }
     }
 }
 
 // =============================
-// Initialize
+// Initialization on Page Load
 // =============================
-updateCartCount();
-loadFeatured();
-loadLocation();
-
-window.onload=function(){
-    console.log("Market Development Centre Loaded");
+document.addEventListener("DOMContentLoaded", () => {
     updateCartCount();
+    injectCartDrawer();
+    updateNavUserUI();
     loadFeatured();
     loadLocation();
-}
+    syncAllCardSteppers();
+
+    // Close drawer on ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeCartDrawer();
+    });
+});
+

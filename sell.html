@@ -24,11 +24,11 @@
         <li><a href="products.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
         <li><a href="sell.html" class="active"><i class="fa-solid fa-tag"></i> Sell</a></li>
         <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
-        <li><a href="login.html"><i class="fa-solid fa-user"></i> Login</a></li>
+        <li><a href="profile.html" id="userLink"><i class="fa-solid fa-user"></i> <span id="userName">Account</span></a></li>
     </ul>
 
     <div class="icons">
-        <a href="cart.html">
+        <a href="cart.html" onclick="openCartDrawer();return false;">
             <i class="fa-solid fa-cart-shopping"></i>
             <span id="cartCount">0</span>
         </a>

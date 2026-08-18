@@ -1,163 +1,113 @@
 /* ============================================
-   MARKET DEVELOPMENT CENTRE - Product Page CSS
+   MARKET DEVELOPMENT CENTRE - Product Styles
    ============================================ */
 
-/* Products Page Styling */
-body {
-    margin: 0;
-    font-family: 'Poppins', sans-serif;
-    background: #f5fff5;
+.products-page-wrapper {
+    min-height: 80vh;
+    padding-bottom: 60px;
 }
 
-/* Navigation Header */
-header {
-    background: #2e8b57;
-    color: white;
-    padding: 15px 40px;
+.product-grid-container {
+    padding: 30px 6%;
+}
+
+.product-card-enhanced {
+    background: #fff;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    align-items: center;
+    position: relative;
+    border: 1px solid #f0f4f0;
 }
 
-.logo {
-    font-size: 28px;
-    font-weight: bold;
+.product-card-enhanced:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(46, 125, 50, 0.12);
+    border-color: #d1e7d1;
 }
 
-nav a {
-    color: white;
-    text-decoration: none;
-    margin-left: 25px;
-    font-size: 17px;
-}
-
-nav a:hover {
-    color: #ffe600;
-}
-
-/* Hero Section */
-.hero {
-    text-align: center;
-    padding: 40px;
-    background: linear-gradient(120deg, #4caf50, #8bc34a);
-    color: white;
-}
-
-.hero h1 {
-    font-size: 36px;
-    margin-bottom: 10px;
-}
-
-.hero p {
-    font-size: 18px;
-}
-
-/* Search Section */
-.search-section {
+.product-badge-time {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--darkgreen);
     display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    z-index: 2;
+}
+
+.product-image-wrap {
+    width: 100%;
+    height: 160px;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    gap: 20px;
-    padding: 30px;
-    flex-wrap: wrap;
+    margin-bottom: 12px;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #f9fbf9;
 }
 
-.search-section input,
-.search-section select {
-    padding: 12px;
-    width: 250px;
-    border-radius: 20px;
-    border: 2px solid #4caf50;
-    font-size: 16px;
+.product-image-wrap img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
 }
 
-.search-section input:focus,
-.search-section select:focus {
-    outline: none;
-    border-color: #ff9800;
+.product-card-enhanced:hover .product-image-wrap img {
+    transform: scale(1.06);
 }
 
-/* Product Container */
-.products-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
-    padding: 40px;
+.product-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* Product Card */
-.product-card {
-    background: white;
-    border-radius: 20px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0px 5px 15px rgba(0,0,0,0.15);
-    transition: 0.3s;
+.product-unit-text {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 8px;
 }
 
-.product-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0px 10px 25px rgba(0,0,0,0.25);
+.product-pricing-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 8px 0 12px 0;
 }
 
-/* Product Image */
-.product-card img {
-    width: 180px;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 15px;
+.product-price-current {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
 }
 
-/* Product Name */
-.product-card h3 {
-    color: #2e8b57;
-    font-size: 22px;
-}
-
-/* Description */
-.product-card p {
-    color: #555;
-}
-
-/* Price */
-.price {
-    font-size: 20px;
-    font-weight: bold;
-    color: #ff5722 !important;
-}
-
-/* Button */
-.product-card button {
-    background: #2e8b57;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 16px;
-    margin-top: 10px;
-}
-
-.product-card button:hover {
-    background: #ff9800;
-    transform: scale(1.05);
-}
-
-/* Mobile Responsive */
-@media (max-width: 700px) {
-    header {
-        flex-direction: column;
-    }
-
-    nav {
-        margin-top: 15px;
-    }
-
-    .search-section {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .hero h1 {
-        font-size: 28px;
-    }
+.product-rating-pill {
+    background: #fef9c3;
+    color: #854d0e;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 3px;
 }

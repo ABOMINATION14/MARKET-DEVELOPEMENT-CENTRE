@@ -24,11 +24,11 @@
         <li><a href="products.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
         <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
         <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
-        <li><a href="login.html"><i class="fa-solid fa-user"></i> Login</a></li>
+        <li><a href="login.html"><i class="fa-solid fa-user"></i> Sign In</a></li>
     </ul>
 
     <div class="icons">
-        <a href="cart.html">
+        <a href="cart.html" onclick="openCartDrawer();return false;">
             <i class="fa-solid fa-cart-shopping"></i>
             <span id="cartCount">0</span>
         </a>
@@ -38,41 +38,51 @@
 
 <!-- ================= REGISTER SECTION ================= -->
 <section class="auth-section">
-    <div class="auth-box">
+    <div class="auth-box" style="max-width:500px;">
         <div class="auth-icon">
             <i class="fa-solid fa-user-plus"></i>
         </div>
-        <h1>Create Account 📝</h1>
-        <p>Join us to buy &amp; sell products</p>
+        <h1>Create Your Account 📝</h1>
+        <p>Choose your role to get started with Market DC</p>
+
+        <!-- Role Selector -->
+        <label style="display:block;text-align:left;font-size:14px;font-weight:600;color:var(--darkgreen);margin-bottom:6px;">Register As</label>
+        <div class="role-picker" id="rolePicker">
+            <div class="role-pill active" data-role="buyer" onclick="selectRegisterRole('buyer', this)">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span>🛒 Buyer</span>
+            </div>
+            <div class="role-pill" data-role="seller" onclick="selectRegisterRole('seller', this)">
+                <i class="fa-solid fa-store"></i>
+                <span>🏪 Seller</span>
+            </div>
+            <div class="role-pill" data-role="delivery_partner" onclick="selectRegisterRole('delivery_partner', this)">
+                <i class="fa-solid fa-motorcycle"></i>
+                <span>🛵 Delivery</span>
+            </div>
+        </div>
 
         <form id="registerForm" onsubmit="return handleRegister(event)">
             <label for="name">Full Name</label>
-            <input type="text" id="name" placeholder="Enter your name" required>
+            <input type="text" id="name" placeholder="e.g. John Doe" required>
 
-            <label for="email">Email</label>
-            <input type="email" id="email" placeholder="Enter your email" required>
+            <label for="email">Email Address</label>
+            <input type="email" id="email" placeholder="e.g. name@example.com" required>
 
-            <label for="phone">Phone Number</label>
-            <input type="tel" id="phone" placeholder="Enter your 10-digit phone number" pattern="[0-9]{10}" required>
+            <label for="phone">10-Digit Mobile Number</label>
+            <input type="tel" id="phone" placeholder="e.g. 9876543210" pattern="[0-9]{10}" maxlength="10" required>
 
-            <label for="role">I want to</label>
-            <select id="role">
-                <option value="buyer">Buy Products</option>
-                <option value="seller">Sell Products</option>
-                <option value="both">Both Buy &amp; Sell</option>
-            </select>
+            <label for="password">Create Password</label>
+            <input type="password" id="password" placeholder="Minimum 6 characters" minlength="6" required>
 
-            <label for="password">Password</label>
-            <input type="password" id="password" placeholder="Create a password" required>
-
-            <button type="submit" class="auth-btn">
-                <i class="fa-solid fa-user-plus"></i> Register
+            <button type="submit" class="auth-btn" id="regSubmitBtn" style="margin-top:10px;">
+                <i class="fa-solid fa-circle-check"></i> Register Account
             </button>
         </form>
 
         <p class="auth-switch">
             Already have an account?
-            <a href="login.html">Login</a>
+            <a href="login.html">Sign In Here</a>
         </p>
     </div>
 </section>
@@ -94,53 +104,69 @@
 
 <script src="script.js"></script>
 <script>
-// =============================
-// Register - uses real backend API
-// =============================
-async function handleRegister(event){
-    event.preventDefault();
-    let name=document.getElementById("name").value.trim();
-    let email=document.getElementById("email").value.trim();
-    let phone=document.getElementById("phone").value.trim();
-    let role=document.getElementById("role").value;
-    let password=document.getElementById("password").value;
+let selectedRegRole = 'buyer';
 
-    if(!name || !email || !phone || !password){
-        showToast("Please fill all fields");
+function selectRegisterRole(role, el) {
+    selectedRegRole = role;
+    document.querySelectorAll('.role-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+}
+
+async function handleRegister(event) {
+    event.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim().replace(/\D/g, '');
+    const password = document.getElementById("password").value;
+
+    if (!name || !email || !phone || !password) {
+        showToast("Please fill all required fields");
         return false;
     }
-    if(!/^\d{10}$/.test(phone)){
+    if (phone.length !== 10) {
         showToast("Please enter a valid 10-digit mobile number");
         return false;
     }
 
-    let btn=document.querySelector('#registerForm .auth-btn');
-    btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
-    btn.disabled=true;
+    const btn = document.getElementById('regSubmitBtn');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating Account...';
+    btn.disabled = true;
 
-    try{
-        let res=await fetch(API+'/api/auth/register',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({name,email,phone,role,password})
+    try {
+        const res = await fetch(API + '/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, email, phone, role: selectedRegRole, password })
         });
-        let data=await res.json();
+        const data = await res.json();
 
-        if(data.success){
-            localStorage.setItem('token',data.token);
-            localStorage.setItem('user',JSON.stringify(data.user));
-            showToast("🎉 Registration successful! Welcome " + data.user.name + "!");
-            setTimeout(()=>{window.location.href="index.html";},1500);
-        }else{
-            showToast("❌ "+data.message);
+        if (data.success) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            showToast(`🎉 Registration successful! Welcome, ${data.user.name}!`);
+            setTimeout(() => {
+                if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
+                    window.location.href = "profile.html";
+                } else {
+                    window.location.href = "index.html";
+                }
+            }, 1200);
+        } else {
+            showToast("❌ " + data.message);
+            btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Register Account';
+            btn.disabled = false;
         }
-    }catch(e){
-        showToast("❌ Cannot connect to server. Start it with: node server.js");
+    } catch (e) {
+        showToast("❌ Server connection failed. Is node server.js running?");
+        btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Register Account';
+        btn.disabled = false;
     }
 
-    btn.innerHTML='<i class="fa-solid fa-user-plus"></i> Register';
-    btn.disabled=false;
     return false;
+}
+
+if (isLoggedIn()) {
+    window.location.href = "index.html";
 }
 </script>
 </body>

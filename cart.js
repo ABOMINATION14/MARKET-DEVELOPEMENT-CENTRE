@@ -1,148 +1,125 @@
 // ============================================
-// MARKET DEVELOPMENT CENTRE - Cart Script
+// MARKET DEVELOPMENT CENTRE - Cart Page Controller
 // ============================================
 
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
+function displayCart() {
+    let cartItems = document.getElementById("cartItems");
+    if (!cartItems) return;
 
-// =============================
-// Display Cart Items
-// =============================
-function displayCart(){
-    let cartItems=document.getElementById("cartItems");
-    if(!cartItems) return;
+    let totalPrice = 0;
+    let totalItems = 0;
+    cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-    let totalPrice=0;
-    let totalItems=0;
+    cartItems.innerHTML = "";
 
-    cartItems.innerHTML="";
-
-    if(cart.length===0){
-        cartItems.innerHTML=`
+    if (cart.length === 0) {
+        cartItems.innerHTML = `
         <div class="empty-cart">
-            <i class="fa-solid fa-cart-shopping"></i>
+            <i class="fa-solid fa-cart-shopping" style="font-size:48px;color:#d1d5db;margin-bottom:15px;"></i>
             <h2>Your cart is empty</h2>
-            <p>Add some fresh products to get started!</p>
-            <a href="products.html">
+            <p style="color:#6b7280;margin:6px 0 20px;">Add fresh vegetables, fruits or groceries to get started!</p>
+            <a href="products.html" class="chip-btn active" style="display:inline-flex;padding:12px 24px;font-size:16px;">
                 <i class="fa-solid fa-basket-shopping"></i> Browse Products
             </a>
         </div>`;
-        updateSummary(0,0);
+        updateSummary(0, 0);
         return;
     }
 
-    cart.forEach((item,index)=>{
-        totalPrice += item.price * item.qty;
+    cart.forEach((item, index) => {
+        const itemSubtotal = item.price * item.qty;
+        totalPrice += itemSubtotal;
         totalItems += item.qty;
 
-cartItems.innerHTML += `
-        <div class="cart-item">
-            <div>
-                <h3><i class="fa-solid fa-apple-whole" style="color:#4caf50;margin-right:8px;"></i>${item.name}</h3>
-                <p style="color:#777;margin-top:5px;">Price: ${formatPrice(item.price)} / ${item.unit||'kg'}</p>
-                <p style="color:#777;margin-top:3px;">Weight/Quantity: ${item.qty} ${item.unit||'kg'}</p>
-            </div>
-            <div style="text-align:center;">
-                <p style="color:#777;margin-bottom:5px;">Quantity</p>
-                <div class="qty-control">
-                    <button onclick="decreaseQuantity(${index})">-</button>
-                    <span>${item.qty}</span>
-                    <button onclick="increaseQuantity(${index})">+</button>
+        cartItems.innerHTML += `
+        <div class="cart-item" style="border-radius:14px;background:#fff;padding:16px;box-shadow:var(--shadow-sm);margin-bottom:14px;border:1px solid #f0f0f0;">
+            <div style="display:flex;align-items:center;gap:14px;flex:1;">
+                <img src="${item.image || 'images/vegetables.svg'}" alt="${item.name}" style="width:60px;height:60px;object-fit:cover;border-radius:10px;background:#f9fafb;">
+                <div>
+                    <h3 style="font-size:16px;color:#1f2937;margin-bottom:4px;">${item.name}</h3>
+                    <p style="color:#6b7280;font-size:13px;">${formatPrice(item.price)} / ${item.unit || 'kg'}</p>
                 </div>
             </div>
             <div style="text-align:center;">
-                <p style="color:#777;margin-bottom:5px;">Subtotal</p>
-                <h3 style="color:#ff9800;">${formatPrice(item.price * item.qty)}</h3>
+                <div class="stepper-control">
+                    <button onclick="decreaseCartQuantity(${index})">-</button>
+                    <span class="stepper-count">${item.qty}</span>
+                    <button onclick="increaseCartQuantity(${index})">+</button>
+                </div>
             </div>
-            <button class="remove-btn" onclick="removeItem(${index})">
-                <i class="fa-solid fa-trash"></i> Remove
+            <div style="text-align:right;min-width:90px;">
+                <h3 style="color:var(--darkgreen);font-size:17px;font-weight:700;">${formatPrice(itemSubtotal)}</h3>
+            </div>
+            <button class="remove-btn" onclick="removeCartItem(${index})" title="Remove item" style="margin-left:10px;">
+                <i class="fa-solid fa-trash-can"></i>
             </button>
         </div>`;
     });
 
-    updateSummary(totalItems,totalPrice);
+    updateSummary(totalItems, totalPrice);
 }
 
 // =============================
-// Update Summary (INR ₹)
+// Summary & Delivery Meter
 // =============================
-function updateSummary(items,price){
-    let totalItemsEl=document.getElementById("totalItems");
-    let subTotalEl=document.getElementById("subTotal");
-    let totalPriceEl=document.getElementById("totalPrice");
-    let deliveryEl=document.getElementById("delivery");
+function updateSummary(items, price) {
+    let totalItemsEl = document.getElementById("totalItems");
+    let subTotalEl = document.getElementById("subTotal");
+    let totalPriceEl = document.getElementById("totalPrice");
+    let deliveryEl = document.getElementById("delivery");
 
-    // Free delivery on orders above ₹500, else ₹40
-    let delivery = price>=500 ? 0 : 40;
+    let delivery = price >= 500 ? 0 : 40;
 
-    if(totalItemsEl) totalItemsEl.innerText=items;
-    if(subTotalEl) subTotalEl.innerText=price.toFixed(2);
-    if(deliveryEl) deliveryEl.innerText = delivery===0 ? "FREE" : formatPrice(delivery);
-    if(totalPriceEl) totalPriceEl.innerText=(price+delivery).toFixed(2);
+    if (totalItemsEl) totalItemsEl.innerText = items;
+    if (subTotalEl) subTotalEl.innerText = price.toFixed(2);
+    if (deliveryEl) deliveryEl.innerText = delivery === 0 ? "FREE" : formatPrice(delivery);
+    if (totalPriceEl) totalPriceEl.innerText = (price + delivery).toFixed(2);
 }
 
-// =============================
-// Increase Quantity
-// =============================
-function increaseQuantity(index){
+function increaseCartQuantity(index) {
     cart[index].qty++;
-    saveCart();
+    saveCartAndSync();
 }
 
-// =============================
-// Decrease Quantity
-// =============================
-function decreaseQuantity(index){
-    if(cart[index].qty > 1){
+function decreaseCartQuantity(index) {
+    if (cart[index].qty > 1) {
         cart[index].qty--;
-    }else{
-        cart.splice(index,1);
+    } else {
+        cart.splice(index, 1);
     }
-    saveCart();
+    saveCartAndSync();
 }
 
-// =============================
-// Remove Item
-// =============================
-function removeItem(index){
-    cart.splice(index,1);
-    saveCart();
+function removeCartItem(index) {
+    cart.splice(index, 1);
+    saveCartAndSync();
+    showToast("Item removed from cart");
 }
 
-// =============================
-// Clear Cart
-// =============================
-function clearCart(){
-    if(confirm("Are you sure you want to clear your cart?")){
-        cart=[];
-        localStorage.setItem("cart","[]");
-        displayCart();
-        updateCartCount();
+function clearCart() {
+    if (confirm("Are you sure you want to clear your cart?")) {
+        cart = [];
+        saveCartAndSync();
         showToast("Cart cleared 🗑️");
     }
 }
 
-// =============================
-// Save Cart
-// =============================
-function saveCart(){
-    localStorage.setItem("cart",JSON.stringify(cart));
+function saveCartAndSync() {
+    localStorage.setItem("cart", JSON.stringify(cart));
     displayCart();
     updateCartCount();
+    syncAllCardSteppers();
 }
 
-// =============================
-// Checkout
-// =============================
-function checkout(){
-    if(cart.length===0){
+function checkout() {
+    if (cart.length === 0) {
         showToast("Your cart is empty! Add products first.");
         return;
     }
-    window.location.href="checkout.html";
+    window.location.href = "checkout.html";
 }
 
-// =============================
-// Initialize
-// =============================
-displayCart();
-updateCartCount();
+document.addEventListener("DOMContentLoaded", () => {
+    displayCart();
+    updateCartCount();
+});
