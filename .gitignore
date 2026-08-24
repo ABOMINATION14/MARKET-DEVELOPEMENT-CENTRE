@@ -20,6 +20,10 @@ data/
 test.txt
 push_output.txt
 
+# Netlify cache
+.netlify/
+.netlify/state.json
+
 # OS files
 .DS_Store
 Thumbs.db
