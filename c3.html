@@ -114,103 +114,100 @@
 <script src="script.js"></script>
 <script>
 // =============================
-// Analytics Script
+// Analytics Script (SmartAPI)
 // =============================
+async function initAnalytics() {
+    const orders = await SmartAPI.getOrders();
+    const prods = await SmartAPI.getProducts();
+    const user = getCurrentUser();
 
-let orders=JSON.parse(localStorage.getItem("orders")) || [];
-let myProducts=JSON.parse(localStorage.getItem("myProducts")) || [];
-let user=JSON.parse(localStorage.getItem("user")) || null;
-
-// =============================
-// Update Stats
-// =============================
-let totalSales=0;
-orders.forEach(o=>{
-    totalSales += parseFloat(o.total) || 0;
-});
-
-document.getElementById("statSales").innerText="₹"+totalSales.toFixed(2);
-document.getElementById("statOrders").innerText=orders.length;
-document.getElementById("statProducts").innerText=products.length + myProducts.length;
-document.getElementById("statSellers").innerText=user ? "1" : "0";
-
-// =============================
-// Sales Chart (C3.js)
-// =============================
-let salesData=[0,0,0,0,0,0,0];
-orders.forEach(o=>{
-    // simple distribution - just add to a day slot based on order index
-    let idx=(orders.indexOf(o))%7;
-    salesData[idx] += parseFloat(o.total)||0;
-});
-
-c3.generate({
-    bindto:'#salesChart',
-    data:{
-        columns:[
-            ['Sales', ...salesData]
-        ],
-        type:'bar',
-        colors:{Sales:'#4caf50'}
-    },
-    axis:{
-        x:{
-            type:'category',
-            categories:['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
-        }
-    },
-    bar:{
-        width:{ratio:0.6}
-    },
-    grid:{y:{show:true}}
-});
-
-// =============================
-// Category Chart (Donut)
-// =============================
-let vegCount = products.filter(p=>p.category==='vegetable').length;
-let fruitCount = products.filter(p=>p.category==='fruit').length;
-let dairyCount = products.filter(p=>p.category==='dairy').length;
-let groceryCount = products.filter(p=>p.category==='grocery').length;
-
-c3.generate({
-    bindto:'#categoryChart',
-    data:{
-        columns:[
-            ['Vegetables', vegCount],
-            ['Fruits', fruitCount],
-            ['Dairy', dairyCount],
-            ['Groceries', groceryCount]
-        ],
-        type:'donut'
-    },
-    donut:{title:'Products by Category'}
-});
-
-// =============================
-// Recent Orders
-// =============================
-let recentOrders=document.getElementById("recentOrders");
-if(orders.length===0){
-    recentOrders.innerHTML='<div class="empty-cart"><i class="fa-solid fa-box-open"></i><h2>No orders yet</h2><p>Orders will appear here</p></div>';
-}else{
-    recentOrders.innerHTML="";
-    let recent=orders.slice(-5).reverse();
-    recent.forEach(o=>{
-        recentOrders.innerHTML += `
-        <div class="cart-item" style="flex-direction:column;align-items:flex-start;">
-            <div style="display:flex;justify-content:space-between;width:100%;">
-                <h3>👤 ${o.name}</h3>
-                <span style="background:#4caf50;color:#fff;padding:4px 12px;border-radius:15px;font-size:13px;">${o.payment}</span>
-            </div>
-            <p>📦 ${o.items ? o.items.length : 0} items</p>
-<p>💰 Total: ₹${o.total}</p>
-            <p style="color:#777;font-size:13px;">🕒 ${o.date}</p>
-        </div>`;
+    // 1. Stats
+    let totalSales = 0;
+    orders.forEach(o => {
+        totalSales += parseFloat(o.total) || 0;
     });
+
+    document.getElementById("statSales").innerText = "₹" + totalSales.toFixed(2);
+    document.getElementById("statOrders").innerText = orders.length;
+    document.getElementById("statProducts").innerText = prods.length;
+    document.getElementById("statSellers").innerText = user && user.role === 'seller' ? "1" : "3";
+
+    // 2. Sales Chart (C3.js)
+    let salesData = [0, 0, 0, 0, 0, 0, 0];
+    orders.forEach((o, idx) => {
+        let day = idx % 7;
+        salesData[day] += parseFloat(o.total) || 0;
+    });
+
+    c3.generate({
+        bindto: '#salesChart',
+        data: {
+            columns: [
+                ['Sales', ...salesData]
+            ],
+            type: 'bar',
+            colors: { Sales: '#4caf50' }
+        },
+        axis: {
+            x: {
+                type: 'category',
+                categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            }
+        },
+        bar: {
+            width: { ratio: 0.6 }
+        },
+        grid: { y: { show: true } }
+    });
+
+    // 3. Category Chart (Donut)
+    let vegCount = prods.filter(p => p.category === 'vegetable').length;
+    let fruitCount = prods.filter(p => p.category === 'fruit').length;
+    let dairyCount = prods.filter(p => p.category === 'dairy').length;
+    let groceryCount = prods.filter(p => p.category === 'grocery').length;
+    let drinksCount = prods.filter(p => p.category === 'drinks').length;
+
+    c3.generate({
+        bindto: '#categoryChart',
+        data: {
+            columns: [
+                ['Vegetables', vegCount],
+                ['Fruits', fruitCount],
+                ['Dairy', dairyCount],
+                ['Groceries', groceryCount],
+                ['Drinks', drinksCount]
+            ],
+            type: 'donut'
+        },
+        donut: { title: 'Products' }
+    });
+
+    // 4. Recent Orders
+    let recentOrders = document.getElementById("recentOrders");
+    if (orders.length === 0) {
+        recentOrders.innerHTML = '<div class="empty-cart"><i class="fa-solid fa-box-open"></i><h2>No orders yet</h2><p>Orders will appear here</p></div>';
+    } else {
+        recentOrders.innerHTML = "";
+        let recent = orders.slice(-5).reverse();
+        recent.forEach(o => {
+            recentOrders.innerHTML += `
+            <div class="cart-item" style="flex-direction:column;align-items:flex-start;">
+                <div style="display:flex;justify-content:space-between;width:100%;">
+                    <h3>👤 ${o.name}</h3>
+                    <span style="background:#4caf50;color:#fff;padding:4px 12px;border-radius:15px;font-size:13px;">${o.payment || 'Verified'}</span>
+                </div>
+                <p>📦 ${o.items ? o.items.length : 0} items &bull; Status: <strong>${o.status || 'Placed'}</strong></p>
+                <p>💰 Total: ₹${Number(o.total).toFixed(2)}</p>
+                <p style="color:#777;font-size:13px;">🕒 ${o.date || 'Today'}</p>
+            </div>`;
+        });
+    }
 }
 
-updateCartCount();
+document.addEventListener("DOMContentLoaded", () => {
+    initAnalytics();
+    updateCartCount();
+});
 </script>
 </body>
 </html>

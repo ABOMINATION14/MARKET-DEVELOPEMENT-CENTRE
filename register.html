@@ -132,41 +132,26 @@ async function handleRegister(event) {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating Account...';
     btn.disabled = true;
 
-    try {
-        const res = await fetch(API + '/api/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, phone, role: selectedRegRole, password })
-        });
-        const data = await res.json();
+    const data = await SmartAPI.register(name, email, phone, selectedRegRole, password);
 
-        if (data.success) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            showToast(`🎉 Registration successful! Welcome, ${data.user.name}!`);
-            setTimeout(() => {
-                if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
-                    window.location.href = "profile.html";
-                } else {
-                    window.location.href = "index.html";
-                }
-            }, 1200);
-        } else {
-            showToast("❌ " + data.message);
-            btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Register Account';
-            btn.disabled = false;
-        }
-    } catch (e) {
-        showToast("❌ Server connection failed. Is node server.js running?");
+    if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showToast(`🎉 Registration successful! Welcome, ${data.user.name}!`);
+        setTimeout(() => {
+            if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
+                window.location.href = "profile.html";
+            } else {
+                window.location.href = "index.html";
+            }
+        }, 1000);
+    } else {
+        showToast("❌ " + (data.message || 'Registration failed'));
         btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Register Account';
         btn.disabled = false;
     }
 
     return false;
-}
-
-if (isLoggedIn()) {
-    window.location.href = "index.html";
 }
 </script>
 </body>

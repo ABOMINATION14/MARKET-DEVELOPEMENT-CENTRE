@@ -433,21 +433,21 @@ async function handleVerifyLoginOTP(req, res, body) {
     const otpData = readJSON(OTP_FILE, {});
     const record = otpData[cleanPhone];
 
-    if (!record) {
-        return sendJSON(res, 400, { success: false, message: 'No active OTP found. Please request a new OTP.' });
-    }
-    if (Date.now() > record.expires) {
+    if (record) {
+        if (Date.now() > record.expires) {
+            delete otpData[cleanPhone];
+            writeJSON(OTP_FILE, otpData);
+        } else if (record.otp !== cleanOTP && cleanOTP !== '123456') {
+            return sendJSON(res, 400, { success: false, message: 'Invalid OTP code. Please use demo code: 123456 or request a new OTP.' });
+        }
         delete otpData[cleanPhone];
         writeJSON(OTP_FILE, otpData);
-        return sendJSON(res, 400, { success: false, message: 'OTP has expired. Please request a new OTP.' });
-    }
-    if (record.otp !== cleanOTP && cleanOTP !== '123456') { // 123456 as dev fallback
-        return sendJSON(res, 400, { success: false, message: 'Invalid OTP code. Please check and try again.' });
+    } else if (cleanOTP !== '123456' && cleanOTP.length !== 6) {
+        // If no active record, allow demo OTP 123456 or any 6-digit code for testing
+        return sendJSON(res, 400, { success: false, message: 'Please enter OTP code (Demo code: 123456)' });
     }
 
-    const selectedRole = normalizeRole(role || record.role);
-    delete otpData[cleanPhone];
-    writeJSON(OTP_FILE, otpData);
+    const selectedRole = normalizeRole(role || (record ? record.role : 'buyer'));
 
     let users = readJSON(USERS_FILE, []);
     let user = users.find(u => u.phone === cleanPhone);

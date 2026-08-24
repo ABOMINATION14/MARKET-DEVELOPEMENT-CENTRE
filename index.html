@@ -239,25 +239,16 @@
 
 <script src="script.js"></script>
 <script>
-// =============================
-// Auth Guard - only show home if logged in
-// =============================
-if(!isLoggedIn()){
-    // Not logged in - redirect to login page first
-    window.location.href = 'login.html';
-} else {
-    // Logged in - show user info
+// Show user greeting if logged in
+document.addEventListener("DOMContentLoaded", () => {
     let user = getCurrentUser();
-    if(user){
-        document.getElementById('userName').innerText = user.name.split(' ')[0];
-        document.getElementById('heroGreeting').innerText = 'Welcome, ' + user.name.split(' ')[0] + '! 👋';
-        document.getElementById('logoutBtn').style.display = 'inline';
+    if (user && isLoggedIn()) {
+        const greetingEl = document.getElementById('heroGreeting');
+        if (greetingEl) {
+            greetingEl.innerText = 'Welcome back, ' + (user.name ? user.name.split(' ')[0] : 'Friend') + '! 👋';
+        }
     }
-    loadLocation();
-}
-
-// Update cart count
-updateCartCount();
+});
 </script>
 </body>
 </html>

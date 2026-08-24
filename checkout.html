@@ -377,7 +377,6 @@ async function executeFinalOrder() {
     const phone = document.getElementById('phone').value.trim();
     const address = document.getElementById('address').value.trim();
     const user = getCurrentUser();
-    const token = getToken();
 
     let sub = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
     let disc = sub * appliedDiscount;
@@ -390,52 +389,41 @@ async function executeFinalOrder() {
 
     // Razorpay Flow
     if (selectedPaymentMethod === 'razorpay') {
-        try {
-            // 1. Create order on server
-            const createRes = await fetch(API + '/api/payment/create-order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: finalTotal, currency: 'INR' })
-            });
-            const rzpOrder = await createRes.json();
+        const rzpOrder = await SmartAPI.createPaymentOrder(finalTotal);
 
-            // Check if live Razorpay script available
-            if (window.Razorpay && rzpOrder.keyId && !rzpOrder.mode) {
-                const options = {
-                    key: rzpOrder.keyId,
-                    amount: rzpOrder.amount,
-                    currency: rzpOrder.currency,
-                    name: 'Market Development Centre',
-                    description: 'Order Payment',
-                    order_id: rzpOrder.orderId,
-                    prefill: {
-                        name: name,
-                        email: user ? user.email : '',
-                        contact: phone
-                    },
-                    theme: { color: '#2e7d32' },
-                    handler: async function (response) {
-                        await finalizeOrderPlacement(name, phone, address, 'Razorpay Verified', response.razorpay_payment_id);
-                    },
-                    modal: {
-                        ondismiss: function () {
-                            showToast('⚠️ Payment cancelled by user');
-                            btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Place Order';
-                            btn.disabled = false;
-                        }
+        if (window.Razorpay && rzpOrder.keyId && !rzpOrder.mode) {
+            const options = {
+                key: rzpOrder.keyId,
+                amount: rzpOrder.amount,
+                currency: rzpOrder.currency,
+                name: 'Market Development Centre',
+                description: 'Order Payment',
+                order_id: rzpOrder.orderId,
+                prefill: {
+                    name: name,
+                    email: user ? user.email : '',
+                    contact: phone
+                },
+                theme: { color: '#2e7d32' },
+                handler: async function (response) {
+                    await finalizeOrderPlacement(name, phone, address, 'Razorpay Verified', response.razorpay_payment_id);
+                },
+                modal: {
+                    ondismiss: function () {
+                        showToast('⚠️ Payment cancelled by user');
+                        btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Place Order';
+                        btn.disabled = false;
                     }
-                };
-                const rzp = new Razorpay(options);
-                rzp.open();
-                return;
-            } else {
-                // Test mode fallback
-                showToast('💳 Processing test payment...');
-                await finalizeOrderPlacement(name, phone, address, 'Razorpay (Test Sandbox)', 'pay_test_' + Date.now());
-                return;
-            }
-        } catch (e) {
-            console.warn('Razorpay connect error, using COD fallback:', e);
+                }
+            };
+            const rzp = new Razorpay(options);
+            rzp.open();
+            return;
+        } else {
+            // Test Mode Instant Sandbox
+            showToast('💳 Processing test payment...');
+            await finalizeOrderPlacement(name, phone, address, 'Razorpay (Test Sandbox)', 'pay_test_' + Date.now());
+            return;
         }
     }
 
@@ -445,7 +433,6 @@ async function executeFinalOrder() {
 
 async function finalizeOrderPlacement(name, phone, address, paymentMode, paymentId) {
     const user = getCurrentUser();
-    const token = getToken();
 
     const orderData = {
         name: name,
@@ -456,30 +443,17 @@ async function finalizeOrderPlacement(name, phone, address, paymentMode, payment
         email: user ? user.email : null
     };
 
-    try {
-        const res = await fetch(API + '/api/orders', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-            },
-            body: JSON.stringify(orderData)
-        });
-        const data = await res.json();
+    const data = await SmartAPI.createOrder(orderData);
 
-        if (data.success) {
-            localStorage.setItem("cart", "[]");
-            updateCartCount();
-            showToast("🎉 Order confirmed successfully!");
-            setTimeout(() => {
-                window.location.href = `order-success.html?total=${data.order.total}&orderId=${data.order.id}`;
-            }, 1000);
-        } else {
-            showToast("❌ " + data.message);
-            document.getElementById('placeOrderBtn').disabled = false;
-        }
-    } catch (e) {
-        showToast("❌ Could not reach backend server");
+    if (data && data.success) {
+        localStorage.setItem("cart", "[]");
+        updateCartCount();
+        showToast("🎉 Order confirmed successfully!");
+        setTimeout(() => {
+            window.location.href = `order-success.html?total=${data.order.total}&orderId=${data.order.id}`;
+        }, 900);
+    } else {
+        showToast("❌ Could not place order. Please check your details.");
         document.getElementById('placeOrderBtn').disabled = false;
     }
 }

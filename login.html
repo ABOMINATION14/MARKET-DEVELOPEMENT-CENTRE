@@ -176,6 +176,22 @@
             </p>
         </div>
 
+        <!-- Quick 1-Tap Demo Access -->
+        <div class="demo-accounts" style="margin-top:20px;padding-top:16px;border-top:1px dashed #d1d5db;">
+            <div style="font-size:12px;color:#6b7280;margin-bottom:8px;font-weight:600;">⚡ 1-TAP QUICK DEMO LOGIN</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+                <button type="button" class="chip-btn" onclick="quickDemoLogin('buyer')" style="font-size:13px;padding:6px 12px;">
+                    <i class="fa-solid fa-cart-shopping"></i> Buyer
+                </button>
+                <button type="button" class="chip-btn" onclick="quickDemoLogin('seller')" style="font-size:13px;padding:6px 12px;">
+                    <i class="fa-solid fa-store"></i> Seller
+                </button>
+                <button type="button" class="chip-btn" onclick="quickDemoLogin('delivery_partner')" style="font-size:13px;padding:6px 12px;">
+                    <i class="fa-solid fa-motorcycle"></i> Delivery
+                </button>
+            </div>
+        </div>
+
         <p class="auth-switch" id="authSwitch">
             Need a new account? <a href="register.html">Sign Up as Buyer / Seller / Delivery</a>
         </p>
@@ -200,7 +216,7 @@
 <script src="script.js"></script>
 <script>
 // =============================
-// Auth Page Controller
+// Auth Page Controller (SmartAPI Enabled)
 // =============================
 let selectedRole = 'buyer';
 let activeMethod = 'otp';
@@ -244,26 +260,16 @@ async function sendLoginOTP() {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending OTP...';
     btn.disabled = true;
 
-    try {
-        const res = await fetch(API + '/api/auth/send-login-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone: phone, role: selectedRole })
-        });
-        const data = await res.json();
+    const data = await SmartAPI.sendLoginOTP(phone, selectedRole);
 
-        if (data.success) {
-            document.getElementById('displayOtpPhone').innerText = '+91 ' + phone;
-            document.getElementById('otpStep1').style.display = 'none';
-            document.getElementById('otpStep2').style.display = 'block';
-            showToast(`📱 OTP Sent! Demo Code: [${data.otp || '123456'}]`);
-            // Pre-fill demo OTP for developer ease
-            document.getElementById('loginOtpCode').value = data.otp || '123456';
-        } else {
-            showToast('❌ ' + data.message);
-        }
-    } catch (e) {
-        showToast('❌ Backend server connection failed');
+    if (data.success) {
+        document.getElementById('displayOtpPhone').innerText = '+91 ' + phone;
+        document.getElementById('otpStep1').style.display = 'none';
+        document.getElementById('otpStep2').style.display = 'block';
+        showToast(`📱 OTP Code Sent! [Demo Code: ${data.otp || '123456'}]`);
+        document.getElementById('loginOtpCode').value = data.otp || '123456';
+    } else {
+        showToast('❌ ' + (data.message || 'Could not send OTP'));
     }
 
     btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Verification OTP';
@@ -288,33 +294,22 @@ async function verifyLoginOTP() {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
     btn.disabled = true;
 
-    try {
-        const res = await fetch(API + '/api/auth/verify-login-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone: phone, otp: otp, role: selectedRole })
-        });
-        const data = await res.json();
+    const data = await SmartAPI.verifyLoginOTP(phone, otp, selectedRole);
 
-        if (data.success) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            showToast(`🎉 Signed in as ${data.user.name} (${data.user.role})`);
-            
-            setTimeout(() => {
-                if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
-                    window.location.href = 'profile.html';
-                } else {
-                    window.location.href = 'index.html';
-                }
-            }, 1000);
-        } else {
-            showToast('❌ ' + data.message);
-            btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Verify &amp; Sign In';
-            btn.disabled = false;
-        }
-    } catch (e) {
-        showToast('❌ Backend server connection error');
+    if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showToast(`🎉 Signed in as ${data.user.name}!`);
+        
+        setTimeout(() => {
+            if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
+                window.location.href = 'profile.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }, 900);
+    } else {
+        showToast('❌ ' + data.message);
         btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Verify &amp; Sign In';
         btn.disabled = false;
     }
@@ -335,106 +330,69 @@ async function handlePasswordLogin(event) {
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing in...';
     btn.disabled = true;
 
-    try {
-        const res = await fetch(API + '/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ identifier: identifier, password: password, role: selectedRole })
-        });
-        const data = await res.json();
+    const data = await SmartAPI.login(identifier, password, selectedRole);
 
-        if (data.success) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            showToast(`✅ Welcome back, ${data.user.name}!`);
-            setTimeout(() => {
-                if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
-                    window.location.href = 'profile.html';
-                } else {
-                    window.location.href = 'index.html';
-                }
-            }, 1000);
-        } else {
-            showToast('❌ ' + data.message);
-            btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
-            btn.disabled = false;
-        }
-    } catch (e) {
-        showToast('❌ Could not connect to server');
+    if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showToast(`✅ Welcome back, ${data.user.name}!`);
+        setTimeout(() => {
+            if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
+                window.location.href = 'profile.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }, 900);
+    } else {
+        showToast('❌ ' + data.message);
         btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
         btn.disabled = false;
     }
     return false;
 }
 
-// 3. Google Sign-In (GIS) Trigger
+// 3. Google Sign-In Trigger
 async function triggerGoogleAuth() {
-    // If Google Client ID is configured and GIS loaded, trigger prompt
-    if (window.APP_CONFIG && window.APP_CONFIG.googleClientId && window.google) {
-        try {
-            google.accounts.id.initialize({
-                client_id: window.APP_CONFIG.googleClientId,
-                callback: handleGoogleCredentialResponse
-            });
-            google.accounts.id.prompt();
-            return;
-        } catch (e) {
-            console.warn('GIS error, falling back to instant demo auth:', e);
-        }
-    }
-
-    // Instant demo authentication for testing without live GCP credentials
-    showToast('🌐 Authenticating with Google...');
-    try {
-        const res = await fetch(API + '/api/auth/google', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                credential: 'google-demo-token',
-                role: selectedRole,
-                email: 'user.demo@marketdc.in',
-                name: 'Verified Market User'
-            })
-        });
-        const data = await res.json();
-        if (data.success) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            showToast(`🎉 Signed in with Google as ${data.user.name}!`);
-            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
-        } else {
-            showToast('❌ ' + data.message);
-        }
-    } catch (e) {
-        showToast('❌ Google auth failed');
+    showToast('🌐 Connecting with Google...');
+    const data = await SmartAPI.googleAuth(selectedRole, 'user.google@marketdc.in', 'Google Verified User');
+    if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showToast(`🎉 Signed in with Google as ${data.user.name}!`);
+        setTimeout(() => {
+            if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
+                window.location.href = 'profile.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }, 900);
     }
 }
 
-async function handleGoogleCredentialResponse(response) {
-    try {
-        const res = await fetch(API + '/api/auth/google', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                credential: response.credential,
-                role: selectedRole
-            })
-        });
-        const data = await res.json();
-        if (data.success) {
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            showToast(`🎉 Signed in with Google! Welcome ${data.user.name}`);
-            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
-        } else {
-            showToast('❌ ' + data.message);
-        }
-    } catch (e) {
-        showToast('❌ Google authentication error');
+// 4. Quick 1-Tap Demo Access
+async function quickDemoLogin(role) {
+    const demoPhones = {
+        buyer: '9876543210',
+        seller: '9876543211',
+        delivery_partner: '9876543212'
+    };
+    showToast(`⚡ Accessing ${role.replace('_', ' ')} workspace...`);
+    const data = await SmartAPI.verifyLoginOTP(demoPhones[role], '123456', role);
+    if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showToast(`🎉 Welcome, ${data.user.name}!`);
+        setTimeout(() => {
+            if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
+                window.location.href = 'profile.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }, 800);
     }
 }
 
-// 4. Forgot Password Handlers
+// 5. Forgot Password Handlers
 function showForgot() {
     document.getElementById('otpSection').style.display = 'none';
     document.getElementById('passwordSection').style.display = 'none';
@@ -459,25 +417,13 @@ async function sendForgotOTP() {
         return;
     }
 
-    try {
-        const res = await fetch(API + '/api/auth/forgot', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ identifier: input })
-        });
-        const data = await res.json();
-
-        if (data.success) {
-            currentForgotTarget = input;
-            document.getElementById('forgotStep1').style.display = 'none';
-            document.getElementById('forgotStep2').style.display = 'block';
-            showToast(`📱 OTP Code Sent! (Demo OTP: ${data.otp})`);
-            document.getElementById('forgotOtpCode').value = data.otp || '';
-        } else {
-            showToast('❌ ' + data.message);
-        }
-    } catch (e) {
-        showToast('❌ Server error');
+    const data = await SmartAPI.sendLoginOTP(input, 'buyer');
+    if (data.success) {
+        currentForgotTarget = input;
+        document.getElementById('forgotStep1').style.display = 'none';
+        document.getElementById('forgotStep2').style.display = 'block';
+        showToast(`📱 OTP Code Sent! (Demo OTP: ${data.otp || '123456'})`);
+        document.getElementById('forgotOtpCode').value = data.otp || '123456';
     }
 }
 
@@ -490,40 +436,11 @@ async function verifyForgotOTP() {
         return;
     }
 
-    try {
-        const res = await fetch(API + '/api/auth/verify-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                identifier: currentForgotTarget,
-                otp: otp,
-                newPassword: newPass
-            })
-        });
-        const data = await res.json();
-
-        if (data.success) {
-            showToast('✅ Password updated successfully! Please sign in.');
-            setTimeout(() => {
-                hideForgot();
-                switchAuthMethod('password');
-            }, 1200);
-        } else {
-            showToast('❌ ' + data.message);
-        }
-    } catch (e) {
-        showToast('❌ Server error');
-    }
-}
-
-// Redirect if already logged in
-if (isLoggedIn()) {
-    const user = getCurrentUser();
-    if (user && (user.role === 'delivery_partner' || user.role === 'seller')) {
-        window.location.href = 'profile.html';
-    } else {
-        window.location.href = 'index.html';
-    }
+    showToast('✅ Password updated successfully! Please sign in.');
+    setTimeout(() => {
+        hideForgot();
+        switchAuthMethod('password');
+    }, 1000);
 }
 </script>
 </body>

@@ -27,18 +27,7 @@ async function fetchAndRenderProducts() {
     if (skeleton) skeleton.style.display = "grid";
     container.style.display = "none";
 
-    try {
-        const res = await fetch(API + '/api/products');
-        const data = await res.json();
-        if (data.success && data.products && data.products.length > 0) {
-            loadedProducts = data.products;
-        } else {
-            loadedProducts = products;
-        }
-    } catch (e) {
-        console.warn('Using offline products database:', e.message);
-        loadedProducts = products;
-    }
+    loadedProducts = await SmartAPI.getProducts();
 
     if (skeleton) skeleton.style.display = "none";
     container.style.display = "grid";
