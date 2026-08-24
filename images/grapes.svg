@@ -1,1 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><radialGradient id="bg_grp" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f5f3ff"/><stop offset="100%" stop-color="#ede9fe"/></radialGradient><radialGradient id="grp" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#c084fc"/><stop offset="70%" stop-color="#7e22ce"/><stop offset="100%" stop-color="#4c1d95"/></radialGradient></defs><circle cx="100" cy="100" r="90" fill="url(#bg_grp)"/><path d="M100 45 Q100 20 115 15" stroke="#15803d" stroke-width="4" fill="none"/><path d="M100 40 Q130 25 140 40 Q118 45 100 40 Z" fill="#22c55e"/><g fill="url(#grp)"><circle cx="80" cy="70" r="16"/><circle cx="105" cy="68" r="16"/><circle cx="128" cy="75" r="16"/><circle cx="68" cy="95" r="16"/><circle cx="92" cy="92" r="16"/><circle cx="116" cy="92" r="16"/><circle cx="138" cy="100" r="16"/><circle cx="80" cy="118" r="16"/><circle cx="105" cy="116" r="16"/><circle cx="128" cy="120" r="16"/><circle cx="92" cy="140" r="15"/><circle cx="115" cy="142" r="15"/><circle cx="104" cy="162" r="14"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg_grapes" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#dcfce7"/>
+      <stop offset="100%" stop-color="#bbf7d0"/>
+    </radialGradient>
+    <linearGradient id="grad_grapes" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="90" fill="url(#bg_grapes)"/>
+  <circle cx="100" cy="95" r="55" fill="url(#grad_grapes)" opacity="0.2"/>
+  <text x="100" y="112" font-size="64" text-anchor="middle" font-family="'Segoe UI Emoji', 'Apple Color Emoji', sans-serif">🍇</text>
+  <rect x="35" y="148" width="130" height="26" rx="13" fill="#ffffff" opacity="0.9"/>
+  <text x="100" y="165" font-family="Poppins, sans-serif" font-size="11" font-weight="700" fill="#374151" text-anchor="middle">GREEN GRAPES</text>
+</svg>

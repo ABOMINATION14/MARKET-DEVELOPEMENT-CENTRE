@@ -1,1 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><radialGradient id="bg_spi" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f0fdf4"/><stop offset="100%" stop-color="#bbf7d0"/></radialGradient><linearGradient id="leaf_s" x1="0" y1="1" x2="0" y2="0"><stop offset="0%" stop-color="#166534"/><stop offset="100%" stop-color="#22c55e"/></linearGradient></defs><circle cx="100" cy="100" r="90" fill="url(#bg_spi)"/><path d="M100 170 Q70 120 60 70 Q90 40 100 80 Q110 40 140 70 Q130 120 100 170 Z" fill="url(#leaf_s)"/><path d="M100 170 L100 70" stroke="#86efac" stroke-width="3" fill="none"/><path d="M100 120 Q80 100 70 105" stroke="#86efac" stroke-width="2" fill="none"/><path d="M100 100 Q120 80 130 85" stroke="#86efac" stroke-width="2" fill="none"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg_spinach" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#dcfce7"/>
+      <stop offset="100%" stop-color="#bbf7d0"/>
+    </radialGradient>
+    <linearGradient id="grad_spinach" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#16a34a"/>
+      <stop offset="100%" stop-color="#14532d"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="90" fill="url(#bg_spinach)"/>
+  <circle cx="100" cy="95" r="55" fill="url(#grad_spinach)" opacity="0.2"/>
+  <text x="100" y="112" font-size="64" text-anchor="middle" font-family="'Segoe UI Emoji', 'Apple Color Emoji', sans-serif">🌿</text>
+  <rect x="35" y="148" width="130" height="26" rx="13" fill="#ffffff" opacity="0.9"/>
+  <text x="100" y="165" font-family="Poppins, sans-serif" font-size="11" font-weight="700" fill="#374151" text-anchor="middle">FRESH PALAK</text>
+</svg>

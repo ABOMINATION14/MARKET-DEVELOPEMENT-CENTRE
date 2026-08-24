@@ -1,1 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><radialGradient id="bg_pmk" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff7ed"/><stop offset="100%" stop-color="#ffedd5"/></radialGradient><linearGradient id="pump" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fb923c"/><stop offset="100%" stop-color="#c2410c"/></linearGradient></defs><circle cx="100" cy="100" r="90" fill="url(#bg_pmk)"/><path d="M96 48 Q100 25 110 20 Q115 20 108 48 Z" fill="#15803d"/><ellipse cx="100" cy="115" rx="60" ry="48" fill="url(#pump)"/><ellipse cx="75" cy="115" rx="35" ry="45" fill="url(#pump)" opacity="0.9"/><ellipse cx="125" cy="115" rx="35" ry="45" fill="url(#pump)" opacity="0.9"/><ellipse cx="100" cy="115" rx="22" ry="47" fill="#f97316"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg_pumpkin" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffedd5"/>
+      <stop offset="100%" stop-color="#fed7aa"/>
+    </radialGradient>
+    <linearGradient id="grad_pumpkin" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#c2410c"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="90" fill="url(#bg_pumpkin)"/>
+  <circle cx="100" cy="95" r="55" fill="url(#grad_pumpkin)" opacity="0.2"/>
+  <text x="100" y="112" font-size="64" text-anchor="middle" font-family="'Segoe UI Emoji', 'Apple Color Emoji', sans-serif">🎃</text>
+  <rect x="35" y="148" width="130" height="26" rx="13" fill="#ffffff" opacity="0.9"/>
+  <text x="100" y="165" font-family="Poppins, sans-serif" font-size="11" font-weight="700" fill="#374151" text-anchor="middle">PUMPKIN</text>
+</svg>

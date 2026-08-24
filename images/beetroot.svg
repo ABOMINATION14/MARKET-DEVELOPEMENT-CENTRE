@@ -1,1 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><radialGradient id="bg_beet" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fdf2f8"/><stop offset="100%" stop-color="#fce7f3"/></radialGradient><radialGradient id="beet" cx="40%" cy="40%" r="60%"><stop offset="0%" stop-color="#9d174d"/><stop offset="80%" stop-color="#701a75"/><stop offset="100%" stop-color="#4a044e"/></radialGradient></defs><circle cx="100" cy="100" r="90" fill="url(#bg_beet)"/><path d="M100 65 Q80 25 65 20 Q80 35 95 65 Q100 20 105 15 Q108 30 100 65 Q115 30 135 20 Q120 35 105 65 Z" fill="#15803d"/><circle cx="100" cy="115" r="50" fill="url(#beet)"/><path d="M100 165 Q100 185 105 190" stroke="#701a75" stroke-width="3" fill="none"/><ellipse cx="80" cy="95" rx="10" ry="20" fill="#ffffff" opacity="0.2" transform="rotate(-25 80 95)"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg_beetroot" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fce7f3"/>
+      <stop offset="100%" stop-color="#fbcfe8"/>
+    </radialGradient>
+    <linearGradient id="grad_beetroot" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#be185d"/>
+      <stop offset="100%" stop-color="#701a75"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="90" fill="url(#bg_beetroot)"/>
+  <circle cx="100" cy="95" r="55" fill="url(#grad_beetroot)" opacity="0.2"/>
+  <text x="100" y="112" font-size="64" text-anchor="middle" font-family="'Segoe UI Emoji', 'Apple Color Emoji', sans-serif">🟣</text>
+  <rect x="35" y="148" width="130" height="26" rx="13" fill="#ffffff" opacity="0.9"/>
+  <text x="100" y="165" font-family="Poppins, sans-serif" font-size="11" font-weight="700" fill="#374151" text-anchor="middle">RED BEETROOT</text>
+</svg>

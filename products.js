@@ -60,7 +60,7 @@ function renderProductCards(items) {
                 <img src="${img}" alt="${p.name}" loading="lazy">
             </div>
             <div class="product-title" title="${p.name}">${p.name}</div>
-            <div class="product-unit-text">1 ${unit} &bull; <span style="color:#10b981;">Farm Fresh</span></div>
+            <div class="product-unit-text">1 ${unit} &bull; <span style="color:#16a34a;font-weight:600;"><i class="fa-solid fa-circle-check" style="font-size:11px;"></i> In Stock (${p.stock || 100})</span></div>
             <div class="product-pricing-row">
                 <div class="product-price-current">${formatPrice(p.price)}</div>
                 <div class="product-rating-pill">

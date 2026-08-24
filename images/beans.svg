@@ -1,1 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><radialGradient id="bg_bn" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f0fdf4"/><stop offset="100%" stop-color="#dcfce7"/></radialGradient><linearGradient id="bean" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#4ade80"/><stop offset="100%" stop-color="#15803d"/></linearGradient></defs><circle cx="100" cy="100" r="90" fill="url(#bg_bn)"/><path d="M70 40 Q80 100 120 160 Q110 162 105 158 Q68 100 62 42 Z" fill="url(#bean)"/><path d="M95 40 Q105 100 145 160 Q135 162 130 158 Q93 100 87 42 Z" fill="url(#bean)"/><circle cx="85" cy="85" r="4" fill="#86efac" opacity="0.6"/><circle cx="100" cy="115" r="4" fill="#86efac" opacity="0.6"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bg_beans" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#dcfce7"/>
+      <stop offset="100%" stop-color="#bbf7d0"/>
+    </radialGradient>
+    <linearGradient id="grad_beans" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4ade80"/>
+      <stop offset="100%" stop-color="#15803d"/>
+    </linearGradient>
+  </defs>
+  <circle cx="100" cy="100" r="90" fill="url(#bg_beans)"/>
+  <circle cx="100" cy="95" r="55" fill="url(#grad_beans)" opacity="0.2"/>
+  <text x="100" y="112" font-size="64" text-anchor="middle" font-family="'Segoe UI Emoji', 'Apple Color Emoji', sans-serif">🫛</text>
+  <rect x="35" y="148" width="130" height="26" rx="13" fill="#ffffff" opacity="0.9"/>
+  <text x="100" y="165" font-family="Poppins, sans-serif" font-size="11" font-weight="700" fill="#374151" text-anchor="middle">GREEN BEANS</text>
+</svg>
