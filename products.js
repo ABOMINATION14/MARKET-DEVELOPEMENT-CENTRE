@@ -8,13 +8,26 @@ let loadedProducts = [];
 
 // Category Labels Mapping
 const CATEGORY_NAMES = {
-    all: "All Fresh Produce",
+    all: "All Fresh Products",
     vegetable: "Fresh Vegetables",
     fruit: "Farm Fresh Fruits",
     dairy: "Dairy, Butter & Milk",
-    grocery: "Staples & Groceries",
+    grocery: "Staples, Dry Fruits & Groceries",
     drinks: "Cold Drinks & Juices"
 };
+
+// Normalize category values
+function normCategory(c) {
+    if (!c) return "all";
+    c = c.toString().toLowerCase().trim();
+    if (c === "all" || c === "all products" || c === "") return "all";
+    if (c === "vegetable" || c === "vegetables" || c === "veg") return "vegetable";
+    if (c === "fruit" || c === "fruits") return "fruit";
+    if (c === "dairy" || c === "milk" || c === "egg" || c === "eggs" || c === "butter") return "dairy";
+    if (c === "grocery" || c === "groceries" || c === "staple" || c === "staples" || c === "snack" || c === "snacks" || c === "dryfruits" || c === "nuts") return "grocery";
+    if (c === "drink" || c === "drinks" || c === "juice" || c === "juices" || c === "colddrink" || c === "colddrinks" || c === "beverage" || c === "beverages") return "drinks";
+    return c;
+}
 
 // =============================
 // Fetch & Load Products
@@ -27,7 +40,25 @@ async function fetchAndRenderProducts() {
     if (skeleton) skeleton.style.display = "grid";
     container.style.display = "none";
 
-    loadedProducts = await SmartAPI.getProducts();
+    // Auto-migrate browser cache to 100 items if outdated
+    if (typeof products !== "undefined" && Array.isArray(products) && products.length >= 100) {
+        const stored = JSON.parse(localStorage.getItem("localProducts") || "[]");
+        if (!stored || stored.length < products.length) {
+            localStorage.setItem("localProducts", JSON.stringify(products));
+        }
+    }
+
+    try {
+        loadedProducts = await SmartAPI.getProducts();
+    } catch (e) {
+        loadedProducts = (typeof products !== "undefined") ? products : [];
+    }
+
+    // Safety fallback: if loadedProducts is empty or less than 100
+    if ((!loadedProducts || loadedProducts.length < 100) && typeof products !== "undefined") {
+        loadedProducts = products;
+        localStorage.setItem("localProducts", JSON.stringify(products));
+    }
 
     if (skeleton) skeleton.style.display = "none";
     container.style.display = "grid";
@@ -50,17 +81,19 @@ function renderProductCards(items) {
         const qty = getCartItemQty(p.name);
         const unit = p.unit || 'kg';
         const img = p.image || 'images/vegetables.svg';
+        const catNorm = normCategory(p.category);
+        const inStock = p.stock || 100;
 
         container.innerHTML += `
-        <div class="product-card-enhanced" data-category="${p.category}" data-name="${p.name.toLowerCase()}">
+        <div class="product-card-enhanced" data-category="${catNorm}" data-name="${p.name.toLowerCase()}">
             <div class="product-badge-time">
                 <i class="fa-solid fa-bolt" style="color:var(--orange)"></i> 10 MINS
             </div>
             <div class="product-image-wrap">
-                <img src="${img}" alt="${p.name}" loading="lazy">
+                <img src="${img}" alt="${p.name}" loading="lazy" onerror="this.src='images/vegetables.svg'">
             </div>
             <div class="product-title" title="${p.name}">${p.name}</div>
-            <div class="product-unit-text">1 ${unit} &bull; <span style="color:#16a34a;font-weight:600;"><i class="fa-solid fa-circle-check" style="font-size:11px;"></i> In Stock (${p.stock || 100})</span></div>
+            <div class="product-unit-text">1 ${unit} &bull; <span style="color:#16a34a;font-weight:600;"><i class="fa-solid fa-circle-check" style="font-size:11px;"></i> In Stock (${inStock})</span></div>
             <div class="product-pricing-row">
                 <div class="product-price-current">${formatPrice(p.price)}</div>
                 <div class="product-rating-pill">
@@ -90,21 +123,21 @@ function renderProductCards(items) {
 // Category Chip Selection
 // =============================
 function selectCategory(cat, btn) {
-    currentCategory = cat;
+    currentCategory = normCategory(cat);
 
     // Update active chip styling
     document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
     if (btn) {
         btn.classList.add('active');
     } else {
-        const matchingBtn = document.querySelector(`.chip-btn[data-cat="${cat}"]`);
+        const matchingBtn = document.querySelector(`.chip-btn[data-cat="${currentCategory}"]`);
         if (matchingBtn) matchingBtn.classList.add('active');
     }
 
     // Update Category Title
     const titleEl = document.getElementById("pageCatTitle");
     if (titleEl) {
-        titleEl.innerText = CATEGORY_NAMES[cat] || "Fresh Products";
+        titleEl.innerText = CATEGORY_NAMES[currentCategory] || "Fresh Products";
     }
 
     applyFilters();
@@ -119,11 +152,13 @@ function applyFilters() {
     const countBadge = document.getElementById("productCountBadge");
     let visibleCount = 0;
 
-    cards.forEach(card => {
-        const cat = card.getAttribute("data-category");
-        const name = card.getAttribute("data-name");
+    const targetCategory = normCategory(currentCategory);
 
-        const catMatch = currentCategory === "all" || cat === currentCategory;
+    cards.forEach(card => {
+        const cardCat = normCategory(card.getAttribute("data-category"));
+        const name = (card.getAttribute("data-name") || "").toLowerCase();
+
+        const catMatch = targetCategory === "all" || cardCat === targetCategory;
         const searchMatch = !currentSearch || name.includes(currentSearch);
 
         if (catMatch && searchMatch) {
@@ -162,8 +197,12 @@ function searchProduct() {
 function loadCategoryFromURL() {
     const params = new URLSearchParams(window.location.search);
     const cat = params.get("cat");
-    if (cat && ["vegetable", "fruit", "dairy", "grocery", "drinks"].includes(cat)) {
-        selectCategory(cat, document.querySelector(`.chip-btn[data-cat="${cat}"]`));
+    if (cat) {
+        const norm = normCategory(cat);
+        const btn = document.querySelector(`.chip-btn[data-cat="${norm}"]`) || document.querySelector(`.chip-btn[data-cat="${cat}"]`);
+        selectCategory(norm, btn);
+    } else {
+        applyFilters();
     }
 }
 
