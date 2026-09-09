@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Development Centre | Sell Products</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav>
+    <a href="index.html" class="logo">
+        <i class="fa-solid fa-store"></i>
+        <span>Market Development<br><small>Centre</small></span>
+    </a>
+
+    <ul>
+        <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a href="products.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
+        <li><a href="sell.html" class="active"><i class="fa-solid fa-tag"></i> Sell</a></li>
+        <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
+        <li><a href="profile.html" id="userLink"><i class="fa-solid fa-user"></i> <span id="userName">Account</span></a></li>
+    </ul>
+
+    <div class="icons">
+        <a href="cart.html" onclick="openCartDrawer();return false;">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cartCount">0</span>
+        </a>
+        <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
+    </div>
+</nav>
+
+<!-- ================= SELL HERO ================= -->
+<section class="hero" style="padding:40px 6%;">
+    <div class="hero-text">
+        <h1>💰 Sell Your Products</h1>
+        <p>
+            Farmers and sellers! List your products and reach more customers.<br>
+            <i class="fa-solid fa-circle-check" style="color:var(--green)"></i> 100% Free to list<br>
+            <i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Get fair prices<br>
+            <i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Sell to thousands of customers
+        </p>
+        <div class="hero-buttons">
+            <a href="#sellForm" class="btn-sell">
+                <i class="fa-solid fa-tag"></i> List Your Product
+            </a>
+            <a href="products.html" class="btn-buy">
+                <i class="fa-solid fa-basket-shopping"></i> Browse Products
+            </a>
+        </div>
+    </div>
+    <div class="hero-image">
+        <img src="images/selling.svg" alt="Sell Products">
+    </div>
+</section>
+
+<!-- ================= SELL FORM ================= -->
+<section class="checkout-section" id="sellForm">
+    <div class="checkout-form">
+        <h2>📝 List Your Product</h2>
+        <p style="color:#777;margin-bottom:20px;">Fill this simple form to sell your product</p>
+
+        <form onsubmit="return submitProduct(event)">
+            <label for="pname">Product Name</label>
+            <input type="text" id="pname" placeholder="e.g. Fresh Mangoes" required>
+
+            <label for="pcategory">Category</label>
+            <select id="pcategory">
+                <option value="vegetable">Vegetable</option>
+                <option value="fruit">Fruit</option>
+                <option value="dairy">Dairy</option>
+                <option value="grocery">Grocery</option>
+                <option value="drinks">Drinks</option>
+            </select>
+
+<label for="pprice">Price ₹ (per kg / piece)</label>
+            <input type="number" id="pprice" placeholder="e.g. 40" min="0.01" step="0.01" required>
+
+            <label for="pquantity">Quantity Available</label>
+            <input type="number" id="pquantity" placeholder="e.g. 50 kg" min="1" required>
+
+            <label for="pdesc">Description</label>
+            <textarea id="pdesc" rows="3" placeholder="Tell buyers about your product..."></textarea>
+
+            <label for="pcontact">Contact Number</label>
+            <input type="tel" id="pcontact" placeholder="Your phone number" required>
+
+            <button type="submit" class="pay-btn">
+                <i class="fa-solid fa-tag"></i> Submit Product
+            </button>
+        </form>
+    </div>
+
+    <div>
+        <!-- My Listed Products -->
+        <div class="checkout-form" style="margin-bottom:20px;">
+            <h2>📦 My Listed Products</h2>
+            <div id="myProducts">
+                <p style="color:#777;">No products listed yet.</p>
+            </div>
+        </div>
+
+        <!-- Benefits -->
+        <div class="cart-summary">
+            <h2>✨ Selling Benefits</h2>
+            <div class="summary-row">
+                <span><i class="fa-solid fa-users" style="color:#4caf50;"></i> More Customers</span>
+            </div>
+            <div class="summary-row">
+                <span><i class="fa-solid fa-hand-holding-dollar" style="color:#ff9800;"></i> Better Prices</span>
+            </div>
+            <div class="summary-row">
+                <span><i class="fa-solid fa-truck" style="color:#4caf50;"></i> Easy Delivery</span>
+            </div>
+            <div class="summary-row">
+                <span><i class="fa-solid fa-shield-halved" style="color:#ff9800;"></i> Secure Payments</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+    <div class="footer-logo">
+        <i class="fa-solid fa-store"></i> Market Development Centre
+    </div>
+    <p>Buy &amp; Sell Fresh Products for Everyone</p>
+    <p>© 2026 Market Development Centre. All Rights Reserved.</p>
+    <div class="social">
+        <i class="fa-brands fa-facebook"></i>
+        <i class="fa-brands fa-instagram"></i>
+        <i class="fa-brands fa-twitter"></i>
+        <i class="fa-brands fa-whatsapp"></i>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+// =============================
+// Sell Product Function
+// =============================
+function submitProduct(event){
+    event.preventDefault();
+
+    let name=document.getElementById("pname").value;
+    let category=document.getElementById("pcategory").value;
+    let price=document.getElementById("pprice").value;
+    let quantity=document.getElementById("pquantity").value;
+    let desc=document.getElementById("pdesc").value;
+    let contact=document.getElementById("pcontact").value;
+
+    let product={
+        name:name,
+        category:category,
+        price:parseFloat(price),
+        quantity:quantity,
+        desc:desc,
+        contact:contact
+    };
+
+    // Save to local storage
+    let myProducts=JSON.parse(localStorage.getItem("myProducts")) || [];
+    myProducts.push(product);
+    localStorage.setItem("myProducts",JSON.stringify(myProducts));
+
+    // Show success
+    showToast("✅ " + name + " listed successfully!");
+
+    // Reset form
+    document.getElementById("pname").value="";
+    document.getElementById("pprice").value="";
+    document.getElementById("pquantity").value="";
+    document.getElementById("pdesc").value="";
+    document.getElementById("pcontact").value="";
+
+    loadMyProducts();
+    return false;
+}
+
+// =============================
+// Load My Products
+// =============================
+function loadMyProducts(){
+    let container=document.getElementById("myProducts");
+    let myProducts=JSON.parse(localStorage.getItem("myProducts")) || [];
+
+    if(myProducts.length===0){
+        container.innerHTML='<p style="color:#777;">No products listed yet.</p>';
+        return;
+    }
+
+    container.innerHTML="";
+    myProducts.forEach((p,index)=>{
+        container.innerHTML += `
+        <div class="cart-item" style="flex-direction:column;align-items:flex-start;">
+            <div style="display:flex;justify-content:space-between;width:100%;">
+                <h3>${p.name}</h3>
+                <span style="background:#4caf50;color:#fff;padding:4px 12px;border-radius:15px;font-size:13px;">${p.category}</span>
+            </div>
+<p>💰 Price: ₹${p.price} &nbsp;|&nbsp; 📦 Qty: ${p.quantity}</p>
+            <p style="color:#777;font-size:14px;">${p.desc}</p>
+            <button class="remove-btn" onclick="removeProduct(${index})">
+                <i class="fa-solid fa-trash"></i> Remove
+            </button>
+        </div>`;
+    });
+}
+
+// =============================
+// Remove My Product
+// =============================
+function removeProduct(index){
+    let myProducts=JSON.parse(localStorage.getItem("myProducts")) || [];
+    myProducts.splice(index,1);
+    localStorage.setItem("myProducts",JSON.stringify(myProducts));
+    loadMyProducts();
+    showToast("Product removed");
+}
+
+loadMyProducts();
+updateCartCount();
+</script>
+</body>
+</html>

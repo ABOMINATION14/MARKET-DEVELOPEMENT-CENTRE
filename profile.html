@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Development Centre | Account Dashboard</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav>
+    <a href="index.html" class="logo">
+        <i class="fa-solid fa-store"></i>
+        <span>Market Development<br><small>Centre</small></span>
+    </a>
+
+    <ul>
+        <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a href="products.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
+        <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
+        <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
+        <li><a href="profile.html" class="active" id="userLink"><i class="fa-solid fa-user"></i> <span id="navUserName">Account</span></a></li>
+    </ul>
+
+    <div class="icons">
+        <a href="cart.html" onclick="openCartDrawer();return false;">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cartCount">0</span>
+        </a>
+        <a href="#" onclick="logout();return false;" id="logoutBtn" title="Sign Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+        </a>
+        <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
+    </div>
+</nav>
+
+<!-- ================= PROFILE DASHBOARD ================= -->
+<section class="profile-section">
+    <!-- Sidebar -->
+    <div class="profile-sidebar">
+        <div class="avatar" id="avatarIcon">
+            <i class="fa-solid fa-circle-user"></i>
+        </div>
+        <h3 id="userName">User</h3>
+        <p id="userRoleBadge" class="role-badge buyer">Buyer</p>
+        
+        <div class="profile-menu" id="profileMenu">
+            <!-- Tabs injected by JS based on user role -->
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="profile-content">
+        
+        <!-- 1. OVERVIEW TAB -->
+        <div id="overview" class="tab-pane active">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h2>📊 Dashboard Overview</h2>
+                <button class="chip-btn" onclick="refreshDashboardData()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+            </div>
+            
+            <div class="info-row"><span>Full Name</span><strong id="ovName">-</strong></div>
+            <div class="info-row"><span>Email Address</span><strong id="ovEmail">-</strong></div>
+            <div class="info-row"><span>Registered Phone</span><strong id="ovPhone">-</strong></div>
+            <div class="info-row"><span>Account Role</span><strong id="ovRole" style="text-transform:capitalize;">-</strong></div>
+            <div class="info-row" id="ovStatRow"><span>Total Orders</span><strong id="ovOrders">0</strong></div>
+        </div>
+
+        <!-- 2. BUYER ORDERS TAB (With 4-Stage Horizontal Status Tracker) -->
+        <div id="buyerOrders" class="tab-pane" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h2>📦 My Orders &amp; Live Tracking</h2>
+                <button class="chip-btn" onclick="loadBuyerOrders()"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+            </div>
+            <div id="buyerOrdersList">
+                <p style="color:#777;">Loading your orders...</p>
+            </div>
+        </div>
+
+        <!-- 3. SELLER CATALOG & LISTINGS TAB -->
+        <div id="sellerCatalog" class="tab-pane" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h2>🏪 Store Produce Catalog</h2>
+                <button class="tab-btn" onclick="openAddProductModal()" style="width:auto;padding:8px 16px;">
+                    <i class="fa-solid fa-plus"></i> Add New Product
+                </button>
+            </div>
+            <div id="sellerProductsGrid" class="product-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+                <!-- Seller products loaded here -->
+            </div>
+        </div>
+
+        <!-- 4. DELIVERY PARTNER QUEUE TAB -->
+        <div id="deliveryQueue" class="tab-pane" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <h2>🛵 Live Delivery Orders Queue</h2>
+                <button class="chip-btn" onclick="loadDeliveryQueue()"><i class="fa-solid fa-arrows-rotate"></i> Sync Queue</button>
+            </div>
+            <div id="deliveryQueueList">
+                <p style="color:#777;">Loading assigned deliveries...</p>
+            </div>
+        </div>
+
+        <!-- 5. PROFILE SETTINGS TAB -->
+        <div id="settings" class="tab-pane" style="display:none;">
+            <h2>⚙️ Profile Settings</h2>
+            <p style="color:#6b7280;margin-bottom:20px;">Update your profile credentials</p>
+            
+            <label for="upName" style="font-weight:600;color:var(--darkgreen);">Full Name</label>
+            <input type="text" id="upName" placeholder="Your name" style="width:100%;padding:12px;border:1.5px solid #d1d5db;border-radius:10px;margin-bottom:15px;">
+            
+            <label for="upPhone" style="font-weight:600;color:var(--darkgreen);">Mobile Phone</label>
+            <input type="tel" id="upPhone" placeholder="10-digit mobile" maxlength="10" style="width:100%;padding:12px;border:1.5px solid #d1d5db;border-radius:10px;margin-bottom:20px;">
+            
+            <button class="auth-btn" onclick="saveSettings()">Save Changes</button>
+        </div>
+
+    </div>
+</section>
+
+<!-- ================= ADD PRODUCT MODAL (For Sellers) ================= -->
+<div id="addProductModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;border-radius:18px;max-width:480px;width:100%;padding:24px;position:relative;box-shadow:var(--shadow-lg);">
+        <button onclick="closeAddProductModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:#777;">&times;</button>
+        <h3 style="color:var(--darkgreen);margin-bottom:15px;"><i class="fa-solid fa-plus-circle"></i> Add Produce Listing</h3>
+        
+        <form onsubmit="return handleAddNewProduct(event)">
+            <label>Product Name</label>
+            <input type="text" id="newProdName" placeholder="e.g. Fresh Red Tomatoes" required>
+            
+            <label>Category</label>
+            <select id="newProdCategory" style="width:100%;padding:12px;border:1.5px solid #d1d5db;border-radius:10px;margin-bottom:15px;">
+                <option value="vegetable">🥦 Vegetable</option>
+                <option value="fruit">🍎 Fruit</option>
+                <option value="dairy">🥛 Dairy</option>
+                <option value="grocery">🌾 Grocery</option>
+                <option value="drinks">🧃 Drinks</option>
+            </select>
+            
+            <div style="display:flex;gap:10px;">
+                <div style="flex:1;">
+                    <label>Price (₹)</label>
+                    <input type="number" id="newProdPrice" placeholder="40" min="1" required>
+                </div>
+                <div style="flex:1;">
+                    <label>Unit</label>
+                    <input type="text" id="newProdUnit" placeholder="kg or pack" value="kg" required>
+                </div>
+            </div>
+            
+            <label>Description / Farm Details</label>
+            <textarea id="newProdDesc" rows="2" placeholder="Freshly harvested from farm..." required></textarea>
+            
+            <button type="submit" class="auth-btn" id="btnSubmitNewProd" style="margin-top:10px;">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Publish Listing
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+    <div class="footer-logo">
+        <i class="fa-solid fa-store"></i> Market Development Centre
+    </div>
+    <p>Buy &amp; Sell Fresh Products for Everyone</p>
+    <p>© 2026 Market Development Centre. All Rights Reserved.</p>
+    <div class="social">
+        <i class="fa-brands fa-facebook"></i>
+        <i class="fa-brands fa-instagram"></i>
+        <i class="fa-brands fa-twitter"></i>
+        <i class="fa-brands fa-whatsapp"></i>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+// =============================
+// Dashboard Controller
+// =============================
+let currentUser = getCurrentUser();
+let allOrders = [];
+
+// Auth Guard
+if (!isLoggedIn()) {
+    window.location.href = 'login.html';
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    initDashboard();
+});
+
+function initDashboard() {
+    currentUser = getCurrentUser();
+    if (!currentUser) return;
+
+    // Header updates
+    document.getElementById("userName").innerText = currentUser.name || "User";
+    const roleBadge = document.getElementById("userRoleBadge");
+    roleBadge.innerText = (currentUser.role || 'buyer').replace('_', ' ').toUpperCase();
+    roleBadge.className = `role-badge ${currentUser.role || 'buyer'}`;
+
+    document.getElementById("ovName").innerText = currentUser.name || "-";
+    document.getElementById("ovEmail").innerText = currentUser.email || "-";
+    document.getElementById("ovPhone").innerText = currentUser.phone ? '+91 ' + currentUser.phone : "-";
+    document.getElementById("ovRole").innerText = (currentUser.role || 'Buyer').replace('_', ' ');
+
+    document.getElementById("upName").value = currentUser.name || "";
+    document.getElementById("upPhone").value = currentUser.phone || "";
+
+    buildSidebarMenu(currentUser.role);
+    refreshDashboardData();
+}
+
+function buildSidebarMenu(role) {
+    const menu = document.getElementById("profileMenu");
+    menu.innerHTML = "";
+
+    menu.innerHTML += `<button class="active" onclick="switchProfileTab('overview', this)"><i class="fa-solid fa-house"></i> Overview</button>`;
+
+    if (role === 'delivery_partner') {
+        menu.innerHTML += `<button onclick="switchProfileTab('deliveryQueue', this)"><i class="fa-solid fa-motorcycle"></i> Delivery Queue</button>`;
+    } else if (role === 'seller') {
+        menu.innerHTML += `<button onclick="switchProfileTab('sellerCatalog', this)"><i class="fa-solid fa-store"></i> My Produce</button>`;
+        menu.innerHTML += `<button onclick="switchProfileTab('buyerOrders', this)"><i class="fa-solid fa-box"></i> Store Orders</button>`;
+    } else {
+        menu.innerHTML += `<button onclick="switchProfileTab('buyerOrders', this)"><i class="fa-solid fa-box"></i> My Orders</button>`;
+    }
+
+    menu.innerHTML += `<button onclick="switchProfileTab('settings', this)"><i class="fa-solid fa-gear"></i> Settings</button>`;
+    menu.innerHTML += `<button onclick="logout()" style="color:#ef4444;"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>`;
+}
+
+function switchProfileTab(tabId, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+    const target = document.getElementById(tabId);
+    if (target) target.style.display = 'block';
+
+    if (btn) {
+        document.querySelectorAll('.profile-menu button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+
+    if (tabId === 'buyerOrders') loadBuyerOrders();
+    if (tabId === 'deliveryQueue') loadDeliveryQueue();
+    if (tabId === 'sellerCatalog') loadSellerCatalog();
+}
+
+async function refreshDashboardData() {
+    try {
+        allOrders = await SmartAPI.getOrders();
+        document.getElementById("ovOrders").innerText = allOrders.length;
+    } catch (e) {
+        console.warn('Dashboard refresh error:', e);
+    }
+}
+
+// =============================
+// Buyer Order Tracker (Horizontal 4-Stage)
+// =============================
+async function loadBuyerOrders() {
+    const list = document.getElementById("buyerOrdersList");
+    list.innerHTML = '<p style="color:#777;"><i class="fa-solid fa-spinner fa-spin"></i> Fetching orders...</p>';
+
+    allOrders = await SmartAPI.getOrders();
+
+    if (allOrders.length === 0) {
+        list.innerHTML = `
+        <div style="text-align:center;padding:40px;background:#fff;border-radius:14px;">
+            <i class="fa-solid fa-basket-shopping" style="font-size:40px;color:#d1d5db;margin-bottom:10px;"></i>
+            <p style="color:#6b7280;">No orders found yet.</p>
+            <a href="products.html" class="chip-btn active" style="display:inline-block;margin-top:10px;">Start Shopping</a>
+        </div>`;
+        return;
+    }
+
+    list.innerHTML = "";
+    allOrders.forEach(o => {
+        const statusStages = ['Placed', 'Packed', 'Out for Delivery', 'Delivered'];
+        const currentIdx = Math.max(0, statusStages.indexOf(o.status || 'Placed'));
+        const fillPct = (currentIdx / (statusStages.length - 1)) * 100;
+
+        const itemsHtml = (o.items || []).map(i => `
+            <div style="display:flex;justify-content:space-between;font-size:13px;color:#555;padding:3px 0;">
+                <span>${i.name} &times; ${i.qty} ${i.unit || 'kg'}</span>
+                <span>₹${(i.price * i.qty).toFixed(2)}</span>
+            </div>
+        `).join('');
+
+        list.innerHTML += `
+        <div class="order-tracker-card">
+            <div class="tracker-header">
+                <div>
+                    <div class="tracker-id">Order #${String(o.id).substring(0, 12)}</div>
+                    <div class="tracker-time">${o.date || 'Just now'} &bull; ${o.items ? o.items.length : 0} items</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:18px;font-weight:700;color:var(--darkgreen);">₹${Number(o.total).toFixed(2)}</div>
+                    <span class="role-badge buyer" style="font-size:11px;">${o.status || 'Placed'}</span>
+                </div>
+            </div>
+
+            <!-- 4-Stage Horizontal Order Tracker -->
+            <div class="horizontal-tracker">
+                <div class="tracker-line">
+                    <div class="tracker-line-fill" style="width: ${fillPct}%;"></div>
+                </div>
+                
+                <div class="tracker-step ${currentIdx >= 0 ? 'active' : ''} ${currentIdx === 0 ? 'current' : ''}">
+                    <div class="tracker-node"><i class="fa-solid fa-receipt"></i></div>
+                    <div class="tracker-title">Placed</div>
+                </div>
+                <div class="tracker-step ${currentIdx >= 1 ? 'active' : ''} ${currentIdx === 1 ? 'current' : ''}">
+                    <div class="tracker-node"><i class="fa-solid fa-box-open"></i></div>
+                    <div class="tracker-title">Packed</div>
+                </div>
+                <div class="tracker-step ${currentIdx >= 2 ? 'active' : ''} ${currentIdx === 2 ? 'current' : ''}">
+                    <div class="tracker-node"><i class="fa-solid fa-motorcycle"></i></div>
+                    <div class="tracker-title">Out for Delivery</div>
+                </div>
+                <div class="tracker-step ${currentIdx >= 3 ? 'active' : ''} ${currentIdx === 3 ? 'current' : ''}">
+                    <div class="tracker-node"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="tracker-title">Delivered</div>
+                </div>
+            </div>
+
+            <div style="background:#f9fafb;padding:12px;border-radius:10px;margin-top:14px;">
+                <div style="font-weight:600;font-size:13px;color:#374151;margin-bottom:6px;">Items:</div>
+                ${itemsHtml}
+                <div style="margin-top:8px;font-size:12px;color:#6b7280;">📍 ${o.address}</div>
+            </div>
+        </div>`;
+    });
+}
+
+// =============================
+// Delivery Partner Live Queue
+// =============================
+async function loadDeliveryQueue() {
+    const list = document.getElementById("deliveryQueueList");
+    list.innerHTML = '<p style="color:#777;"><i class="fa-solid fa-spinner fa-spin"></i> Loading delivery queue...</p>';
+
+    const queue = await SmartAPI.getOrders();
+
+    if (queue.length === 0) {
+        list.innerHTML = '<p style="color:#777;padding:20px;">No deliveries currently queued.</p>';
+        return;
+    }
+
+    list.innerHTML = "";
+    queue.forEach(o => {
+        let actionBtn = "";
+        if (o.status === 'Placed') {
+            actionBtn = `<button class="status-action-btn btn-pack" onclick="updateOrderStatus('${o.id}', 'Packed')"><i class="fa-solid fa-box"></i> Mark Packed</button>`;
+        } else if (o.status === 'Packed') {
+            actionBtn = `<button class="status-action-btn btn-out" onclick="updateOrderStatus('${o.id}', 'Out for Delivery')"><i class="fa-solid fa-motorcycle"></i> Out for Delivery</button>`;
+        } else if (o.status === 'Out for Delivery') {
+            actionBtn = `<button class="status-action-btn btn-delivered" onclick="updateOrderStatus('${o.id}', 'Delivered')"><i class="fa-solid fa-circle-check"></i> Mark Delivered</button>`;
+        } else {
+            actionBtn = `<span style="color:#10b981;font-weight:600;font-size:13px;"><i class="fa-solid fa-circle-check"></i> Completed</span>`;
+        }
+
+        list.innerHTML += `
+        <div class="delivery-queue-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <div style="font-weight:700;color:var(--darkgreen);">Order #${String(o.id).substring(0,8)}</div>
+                <span class="role-badge ${o.status === 'Delivered' ? 'buyer' : 'delivery_partner'}">${o.status || 'Placed'}</span>
+            </div>
+            <div style="font-size:14px;color:#111;font-weight:600;">👤 ${o.name} &bull; 📞 ${o.phone}</div>
+            <div style="font-size:13px;color:#555;margin:4px 0;">📍 ${o.address}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+                <div style="font-size:15px;font-weight:700;color:var(--darkgreen);">₹${Number(o.total).toFixed(2)} (${o.payment})</div>
+                <div>${actionBtn}</div>
+            </div>
+        </div>`;
+    });
+}
+
+async function updateOrderStatus(orderId, newStatus) {
+    const res = await SmartAPI.updateOrderStatus(orderId, newStatus);
+    if (res.success) {
+        showToast(`✅ Order status updated to: ${newStatus}`);
+        loadDeliveryQueue();
+    } else {
+        showToast('❌ Could not update status');
+    }
+}
+
+// =============================
+// Seller Catalog Manager
+// =============================
+async function loadSellerCatalog() {
+    const grid = document.getElementById("sellerProductsGrid");
+    grid.innerHTML = '<p style="color:#777;"><i class="fa-solid fa-spinner fa-spin"></i> Loading catalog...</p>';
+
+    const prods = await SmartAPI.getProducts();
+
+    grid.innerHTML = "";
+    prods.forEach(p => {
+        grid.innerHTML += `
+        <div class="product-card-enhanced" style="padding:12px;">
+            <div class="product-image-wrap" style="height:110px;">
+                <img src="${p.image || 'images/vegetables.svg'}" alt="${p.name}">
+            </div>
+            <div class="product-title" style="font-size:14px;">${p.name}</div>
+            <div class="product-pricing-row">
+                <div class="product-price-current">₹${p.price}/${p.unit || 'kg'}</div>
+            </div>
+            <div style="font-size:12px;color:#10b981;font-weight:600;margin-top:6px;">In Stock</div>
+        </div>`;
+    });
+}
+
+function openAddProductModal() {
+    document.getElementById("addProductModal").style.display = "flex";
+}
+function closeAddProductModal() {
+    document.getElementById("addProductModal").style.display = "none";
+}
+
+async function handleAddNewProduct(event) {
+    event.preventDefault();
+    const name = document.getElementById("newProdName").value.trim();
+    const category = document.getElementById("newProdCategory").value;
+    const price = Number(document.getElementById("newProdPrice").value);
+    const unit = document.getElementById("newProdUnit").value.trim();
+    const desc = document.getElementById("newProdDesc").value.trim();
+
+    const btn = document.getElementById("btnSubmitNewProd");
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publishing...';
+    btn.disabled = true;
+
+    const data = await SmartAPI.addProduct({ name, category, price, unit, desc });
+
+    if (data.success) {
+        showToast('🎉 Product listing created successfully!');
+        closeAddProductModal();
+        loadSellerCatalog();
+    } else {
+        showToast('❌ ' + (data.message || 'Error publishing product'));
+    }
+
+    btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Publish Listing';
+    btn.disabled = false;
+    return false;
+}
+
+// =============================
+// Settings Saver
+// =============================
+function saveSettings() {
+    const name = document.getElementById("upName").value.trim();
+    const phone = document.getElementById("upPhone").value.trim();
+
+    if (currentUser && name) {
+        currentUser.name = name;
+        currentUser.phone = phone;
+        localStorage.setItem("user", JSON.stringify(currentUser));
+        initDashboard();
+        showToast("Profile settings updated ✅");
+    }
+}
+</script>
+</body>
+</html>

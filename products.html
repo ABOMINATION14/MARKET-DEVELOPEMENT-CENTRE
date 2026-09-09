@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Development Centre | Buy Products</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="product.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav>
+    <a href="index.html" class="logo">
+        <i class="fa-solid fa-store"></i>
+        <span>Market Development<br><small>Centre</small></span>
+    </a>
+
+    <ul>
+        <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a href="products.html" class="active"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
+        <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
+        <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
+        <li><a href="profile.html" id="userLink"><i class="fa-solid fa-user"></i> <span id="userName">Account</span></a></li>
+    </ul>
+
+    <div class="icons">
+        <a href="cart.html" onclick="openCartDrawer();return false;" title="View Cart">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cartCount">0</span>
+        </a>
+        <a href="#" onclick="logout();return false;" id="logoutBtn" style="display:none;" title="Sign Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+        </a>
+        <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
+    </div>
+</nav>
+
+<!-- ================= LOCATION BAR ================= -->
+<div class="location-bar">
+    <i class="fa-solid fa-location-dot"></i>
+    <div class="loc-text" id="locText">
+        Deliver to: <strong>Select location</strong>
+    </div>
+    <button class="detect-btn" onclick="detectLocation()">
+        <i class="fa-solid fa-crosshairs"></i> Detect Location
+    </button>
+</div>
+
+<!-- ================= STICKY SEARCH & CATEGORY CHIPS ================= -->
+<div class="sticky-category-wrapper">
+    <div class="sticky-search-row">
+        <div class="sticky-search-input-wrap">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="searchBox" placeholder="Search vegetables, fruits, dairy, drinks..." onkeyup="searchProduct()">
+            <button class="mic-icon" onclick="voiceSearch()" title="Voice search">
+                <i class="fa-solid fa-microphone"></i>
+            </button>
+        </div>
+    </div>
+    <div class="category-chips" id="categoryChips">
+        <button class="chip-btn active" data-cat="all" onclick="selectCategory('all', this)">
+            <i class="fa-solid fa-border-all"></i> All Products
+        </button>
+        <button class="chip-btn" data-cat="vegetable" onclick="selectCategory('vegetable', this)">
+            🥦 Vegetables
+        </button>
+        <button class="chip-btn" data-cat="fruit" onclick="selectCategory('fruit', this)">
+            🍎 Fresh Fruits
+        </button>
+        <button class="chip-btn" data-cat="dairy" onclick="selectCategory('dairy', this)">
+            🥛 Dairy &amp; Eggs
+        </button>
+        <button class="chip-btn" data-cat="grocery" onclick="selectCategory('grocery', this)">
+            🌾 Groceries &amp; Staples
+        </button>
+        <button class="chip-btn" data-cat="drinks" onclick="selectCategory('drinks', this)">
+            🧃 Drinks &amp; Juices
+        </button>
+    </div>
+</div>
+
+<!-- ================= PRODUCTS SECTION ================= -->
+<section class="products products-page-wrapper">
+    <!-- Promotional Banner -->
+    <div style="margin-bottom:25px;border-radius:18px;overflow:hidden;box-shadow:var(--shadow-sm);cursor:pointer;" onclick="window.location.href='checkout.html'">
+        <img src="images/banner_discount.svg" alt="20% Discount with FRESH20" style="width:100%;height:auto;display:block;max-height:160px;object-fit:cover;">
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <h2 class="section-title" id="pageCatTitle" style="text-align:left;margin-bottom:0;font-size:28px;">All Fresh Items</h2>
+        <span id="productCountBadge" style="font-size:14px;color:#6b7280;font-weight:500;">Showing products</span>
+    </div>
+
+    <!-- Shimmer Skeleton Placeholder -->
+    <div class="product-grid" id="skeletonGrid" style="display:none;">
+        <div class="skeleton-card">
+            <div class="skeleton skeleton-img"></div>
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-btn"></div>
+        </div>
+        <div class="skeleton-card">
+            <div class="skeleton skeleton-img"></div>
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-btn"></div>
+        </div>
+        <div class="skeleton-card">
+            <div class="skeleton skeleton-img"></div>
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-btn"></div>
+        </div>
+        <div class="skeleton-card">
+            <div class="skeleton skeleton-img"></div>
+            <div class="skeleton skeleton-line"></div>
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-btn"></div>
+        </div>
+    </div>
+
+    <!-- Live Products Grid -->
+    <div class="product-grid" id="productList">
+        <!-- Products loaded by JS -->
+    </div>
+
+    <div id="noResults" style="display:none;text-align:center;padding:60px 20px;background:#fff;border-radius:18px;margin-top:20px;">
+        <i class="fa-solid fa-seedling" style="font-size:48px;color:#d1d5db;margin-bottom:12px;"></i>
+        <h3 style="color:#374151;font-size:20px;">No matching produce found</h3>
+        <p style="color:#6b7280;font-size:14px;margin-top:4px;">Try searching for something else or browse another category.</p>
+        <button class="chip-btn active" style="margin-top:15px;" onclick="selectCategory('all', document.querySelector('.chip-btn[data-cat=all]'))">
+            View All Products
+        </button>
+    </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+    <div class="footer-logo">
+        <i class="fa-solid fa-store"></i> Market Development Centre
+    </div>
+    <p>Buy &amp; Sell Fresh Products for Everyone</p>
+    <p>© 2026 Market Development Centre. All Rights Reserved.</p>
+    <div class="social">
+        <i class="fa-brands fa-facebook"></i>
+        <i class="fa-brands fa-instagram"></i>
+        <i class="fa-brands fa-twitter"></i>
+        <i class="fa-brands fa-whatsapp"></i>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script src="products.js"></script>
+</body>
+</html>

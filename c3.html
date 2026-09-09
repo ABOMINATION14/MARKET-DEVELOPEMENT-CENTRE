@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Development Centre | Analytics</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<!-- C3.js and D3.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.css">
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.20/c3.min.js"></script>
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav>
+    <a href="index.html" class="logo">
+        <i class="fa-solid fa-store"></i>
+        <span>Market Development<br><small>Centre</small></span>
+    </a>
+
+    <ul>
+        <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a href="products.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
+        <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
+        <li><a href="c3.html" class="active"><i class="fa-solid fa-chart-line"></i> Analytics</a></li>
+        <li><a href="login.html"><i class="fa-solid fa-user"></i> Login</a></li>
+    </ul>
+
+    <div class="icons">
+        <a href="cart.html">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cartCount">0</span>
+        </a>
+        <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
+    </div>
+</nav>
+
+<!-- ================= DASHBOARD HEADER ================= -->
+<section class="cart-header">
+    <h1>📈 Market Analytics Dashboard</h1>
+    <p>Track sales, products and growth</p>
+</section>
+
+<!-- ================= STAT CARDS ================= -->
+<section class="categories" style="padding:20px 6%;">
+    <div class="category-box">
+<div class="category" style="border-left:5px solid #4caf50;">
+            <i class="fa-solid fa-sack-dollar" style="font-size:45px;color:#4caf50;"></i>
+            <h2 id="statSales">₹0</h2>
+            <h3>Total Sales</h3>
+        </div>
+        <div class="category" style="border-left:5px solid #ff9800;">
+            <i class="fa-solid fa-box" style="font-size:45px;color:#ff9800;"></i>
+            <h2 id="statOrders">0</h2>
+            <h3>Total Orders</h3>
+        </div>
+        <div class="category" style="border-left:5px solid #2196f3;">
+            <i class="fa-solid fa-tag" style="font-size:45px;color:#2196f3;"></i>
+            <h2 id="statProducts">0</h2>
+            <h3>Products Listed</h3>
+        </div>
+        <div class="category" style="border-left:5px solid #e53935;">
+            <i class="fa-solid fa-users" style="font-size:45px;color:#e53935;"></i>
+            <h2 id="statSellers">0</h2>
+            <h3>Sellers</h3>
+        </div>
+    </div>
+</section>
+
+<!-- ================= CHARTS ================= -->
+<section class="products" style="padding:30px 6%;">
+    <div class="product-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="card" style="padding:20px;">
+            <h3 style="margin-bottom:20px;">📊 Weekly Sales</h3>
+            <div id="salesChart"></div>
+        </div>
+        <div class="card" style="padding:20px;">
+            <h3 style="margin-bottom:20px;">🥦 Category Sales</h3>
+            <div id="categoryChart"></div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= RECENT ORDERS ================= -->
+<section class="products" style="padding:30px 6%;">
+    <h2 class="section-title">📋 Recent Orders</h2>
+    <div class="cart-container" style="grid-template-columns:1fr;padding:20px 0;">
+        <div>
+            <div id="recentOrders"></div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+    <div class="footer-logo">
+        <i class="fa-solid fa-store"></i> Market Development Centre
+    </div>
+    <p>Buy &amp; Sell Fresh Products for Everyone</p>
+    <p>© 2026 Market Development Centre. All Rights Reserved.</p>
+    <div class="social">
+        <i class="fa-brands fa-facebook"></i>
+        <i class="fa-brands fa-instagram"></i>
+        <i class="fa-brands fa-twitter"></i>
+        <i class="fa-brands fa-whatsapp"></i>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+// =============================
+// Analytics Script (SmartAPI)
+// =============================
+async function initAnalytics() {
+    const orders = await SmartAPI.getOrders();
+    const prods = await SmartAPI.getProducts();
+    const user = getCurrentUser();
+
+    // 1. Stats
+    let totalSales = 0;
+    orders.forEach(o => {
+        totalSales += parseFloat(o.total) || 0;
+    });
+
+    document.getElementById("statSales").innerText = "₹" + totalSales.toFixed(2);
+    document.getElementById("statOrders").innerText = orders.length;
+    document.getElementById("statProducts").innerText = prods.length;
+    document.getElementById("statSellers").innerText = user && user.role === 'seller' ? "1" : "3";
+
+    // 2. Sales Chart (C3.js)
+    let salesData = [0, 0, 0, 0, 0, 0, 0];
+    orders.forEach((o, idx) => {
+        let day = idx % 7;
+        salesData[day] += parseFloat(o.total) || 0;
+    });
+
+    c3.generate({
+        bindto: '#salesChart',
+        data: {
+            columns: [
+                ['Sales', ...salesData]
+            ],
+            type: 'bar',
+            colors: { Sales: '#4caf50' }
+        },
+        axis: {
+            x: {
+                type: 'category',
+                categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            }
+        },
+        bar: {
+            width: { ratio: 0.6 }
+        },
+        grid: { y: { show: true } }
+    });
+
+    // 3. Category Chart (Donut)
+    let vegCount = prods.filter(p => p.category === 'vegetable').length;
+    let fruitCount = prods.filter(p => p.category === 'fruit').length;
+    let dairyCount = prods.filter(p => p.category === 'dairy').length;
+    let groceryCount = prods.filter(p => p.category === 'grocery').length;
+    let drinksCount = prods.filter(p => p.category === 'drinks').length;
+
+    c3.generate({
+        bindto: '#categoryChart',
+        data: {
+            columns: [
+                ['Vegetables', vegCount],
+                ['Fruits', fruitCount],
+                ['Dairy', dairyCount],
+                ['Groceries', groceryCount],
+                ['Drinks', drinksCount]
+            ],
+            type: 'donut'
+        },
+        donut: { title: 'Products' }
+    });
+
+    // 4. Recent Orders
+    let recentOrders = document.getElementById("recentOrders");
+    if (orders.length === 0) {
+        recentOrders.innerHTML = '<div class="empty-cart"><i class="fa-solid fa-box-open"></i><h2>No orders yet</h2><p>Orders will appear here</p></div>';
+    } else {
+        recentOrders.innerHTML = "";
+        let recent = orders.slice(-5).reverse();
+        recent.forEach(o => {
+            recentOrders.innerHTML += `
+            <div class="cart-item" style="flex-direction:column;align-items:flex-start;">
+                <div style="display:flex;justify-content:space-between;width:100%;">
+                    <h3>👤 ${o.name}</h3>
+                    <span style="background:#4caf50;color:#fff;padding:4px 12px;border-radius:15px;font-size:13px;">${o.payment || 'Verified'}</span>
+                </div>
+                <p>📦 ${o.items ? o.items.length : 0} items &bull; Status: <strong>${o.status || 'Placed'}</strong></p>
+                <p>💰 Total: ₹${Number(o.total).toFixed(2)}</p>
+                <p style="color:#777;font-size:13px;">🕒 ${o.date || 'Today'}</p>
+            </div>`;
+        });
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    initAnalytics();
+    updateCartCount();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Development Centre | Order Confirmed!</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+
+<!-- Celebratory Confetti Container -->
+<div class="confetti-container" id="confettiBox"></div>
+
+<!-- ================= NAVBAR ================= -->
+<nav>
+    <a href="index.html" class="logo">
+        <i class="fa-solid fa-store"></i>
+        <span>Market Development<br><small>Centre</small></span>
+    </a>
+
+    <ul>
+        <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a href="products.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
+        <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
+        <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
+        <li><a href="profile.html" id="userLink"><i class="fa-solid fa-user"></i> <span id="userName">Account</span></a></li>
+    </ul>
+
+    <div class="icons">
+        <a href="cart.html">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cartCount">0</span>
+        </a>
+        <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
+    </div>
+</nav>
+
+<!-- ================= SUCCESS CONTENT ================= -->
+<section class="auth-section">
+    <div class="auth-box" style="max-width:520px;padding:36px 28px;">
+        
+        <!-- Animated SVG Checkmark -->
+        <div class="checkmark-circle-wrapper">
+            <svg class="checkmark-svg" viewBox="0 0 52 52">
+                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
+        </div>
+
+        <h1 style="color:var(--darkgreen);font-size:26px;margin-top:10px;">Order Placed Successfully! 🎉</h1>
+        <p style="color:#6b7280;font-size:14px;">Your fresh produce is being prepared and will be delivered shortly!</p>
+
+        <!-- Order Summary Card -->
+        <div style="background:#f8faf8;border:1px solid #e2e8e2;border-radius:16px;padding:20px;margin:24px 0;text-align:left;">
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding-bottom:10px;margin-bottom:10px;">
+                <span style="color:#6b7280;font-size:14px;">Order Reference:</span>
+                <strong style="color:var(--darkgreen);font-size:14px;" id="orderIdText">#MDC-0000</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding-bottom:10px;margin-bottom:10px;">
+                <span style="color:#6b7280;font-size:14px;">Total Amount:</span>
+                <strong style="color:var(--orange);font-size:16px;" id="orderTotalText">₹0.00</strong>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="color:#6b7280;font-size:14px;">Estimated Arrival:</span>
+                <span style="background:#ecfdf5;color:#065f46;font-weight:600;font-size:13px;padding:4px 10px;border-radius:20px;">
+                    ⚡ 10 - 20 Mins
+                </span>
+            </div>
+        </div>
+
+        <!-- 4-Stage Status Preview -->
+        <div class="horizontal-tracker" style="margin:20px 0 25px;">
+            <div class="tracker-line">
+                <div class="tracker-line-fill" style="width: 15%;"></div>
+            </div>
+            <div class="tracker-step active current">
+                <div class="tracker-node"><i class="fa-solid fa-receipt"></i></div>
+                <div class="tracker-title">Placed</div>
+            </div>
+            <div class="tracker-step">
+                <div class="tracker-node"><i class="fa-solid fa-box-open"></i></div>
+                <div class="tracker-title">Packed</div>
+            </div>
+            <div class="tracker-step">
+                <div class="tracker-node"><i class="fa-solid fa-motorcycle"></i></div>
+                <div class="tracker-title">On The Way</div>
+            </div>
+            <div class="tracker-step">
+                <div class="tracker-node"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="tracker-title">Delivered</div>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:20px;">
+            <a href="profile.html" class="pay-btn" style="text-decoration:none;flex:1;justify-content:center;padding:12px 16px;">
+                <i class="fa-solid fa-location-crosshairs"></i> Track Live Status
+            </a>
+            <a href="products.html" class="tab-btn" style="text-decoration:none;flex:1;justify-content:center;padding:12px 16px;">
+                <i class="fa-solid fa-basket-shopping"></i> Continue Shopping
+            </a>
+        </div>
+
+    </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+    <div class="footer-logo">
+        <i class="fa-solid fa-store"></i> Market Development Centre
+    </div>
+    <p>Buy &amp; Sell Fresh Products for Everyone</p>
+    <p>© 2026 Market Development Centre. All Rights Reserved.</p>
+    <div class="social">
+        <i class="fa-brands fa-facebook"></i>
+        <i class="fa-brands fa-instagram"></i>
+        <i class="fa-brands fa-twitter"></i>
+        <i class="fa-brands fa-whatsapp"></i>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+// Parse Query Params
+const params = new URLSearchParams(window.location.search);
+const total = params.get("total") || "0.00";
+const orderId = params.get("orderId") || "ORD-" + Math.floor(10000 + Math.random() * 90000);
+
+document.getElementById("orderTotalText").innerText = formatPrice(Number(total));
+document.getElementById("orderIdText").innerText = "#" + orderId;
+
+// Confetti Generator
+function triggerCelebration() {
+    const container = document.getElementById("confettiBox");
+    if (!container) return;
+    const colors = ['#2e7d32', '#10b981', '#f59e0b', '#3b82f6', '#ec4899', '#8b5cf6'];
+    
+    for (let i = 0; i < 40; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = (Math.random() * 2) + 's';
+        piece.style.animationDuration = (2.5 + Math.random() * 2) + 's';
+        container.appendChild(piece);
+    }
+}
+
+triggerCelebration();
+updateCartCount();
+</script>
+</body>
+</html>

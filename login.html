@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Development Centre | Sign In</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<!-- Google Identity Services (GIS) -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav>
+    <a href="index.html" class="logo">
+        <i class="fa-solid fa-store"></i>
+        <span>Market Development<br><small>Centre</small></span>
+    </a>
+
+    <ul>
+        <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a href="products.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
+        <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
+        <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
+        <li><a href="login.html" class="active"><i class="fa-solid fa-user"></i> Sign In</a></li>
+    </ul>
+
+    <div class="icons">
+        <a href="cart.html" onclick="openCartDrawer();return false;">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cartCount">0</span>
+        </a>
+        <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
+    </div>
+</nav>
+
+<!-- ================= AUTH SECTION ================= -->
+<section class="auth-section">
+    <div class="auth-box" style="max-width:480px;">
+
+        <div class="auth-icon">
+            <i class="fa-solid fa-user-shield"></i>
+        </div>
+        <h1 id="authTitle">Welcome to Market DC</h1>
+        <p id="authSub">Select your account role and sign in</p>
+
+        <!-- Role Selector Pills -->
+        <label style="display:block;text-align:left;font-size:14px;font-weight:600;color:var(--darkgreen);margin-bottom:6px;">Select Account Role</label>
+        <div class="role-picker" id="rolePicker">
+            <div class="role-pill active" data-role="buyer" onclick="selectAuthRole('buyer', this)">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span>Buyer / Customer</span>
+            </div>
+            <div class="role-pill" data-role="seller" onclick="selectAuthRole('seller', this)">
+                <i class="fa-solid fa-store"></i>
+                <span>Seller / Farmer</span>
+            </div>
+            <div class="role-pill" data-role="delivery_partner" onclick="selectAuthRole('delivery_partner', this)">
+                <i class="fa-solid fa-motorcycle"></i>
+                <span>Delivery Partner</span>
+            </div>
+        </div>
+
+        <!-- Auth Method Tabs: OTP vs Password -->
+        <div class="auth-tabs" style="margin-bottom:18px;">
+            <button class="tab-btn active" id="tabOtp" onclick="switchAuthMethod('otp')" type="button">
+                <i class="fa-solid fa-mobile-screen"></i> Mobile OTP
+            </button>
+            <button class="tab-btn" id="tabPassword" onclick="switchAuthMethod('password')" type="button">
+                <i class="fa-solid fa-key"></i> Password
+            </button>
+        </div>
+
+        <!-- ======= 1. DIRECT MOBILE OTP LOGIN ======= -->
+        <div id="otpSection" style="display:block;">
+            <div id="otpStep1">
+                <label for="otpPhone">Mobile Number</label>
+                <div style="position:relative;margin-bottom:18px;">
+                    <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-weight:600;color:#555;">+91</span>
+                    <input type="tel" id="otpPhone" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" style="padding-left:52px;margin-bottom:0;" required>
+                </div>
+
+                <button type="button" class="auth-btn" id="btnSendLoginOtp" onclick="sendLoginOTP()">
+                    <i class="fa-solid fa-paper-plane"></i> Send Verification OTP
+                </button>
+            </div>
+
+            <div id="otpStep2" style="display:none;">
+                <div style="background:#f0fdf4;padding:12px;border-radius:12px;margin-bottom:15px;text-align:left;font-size:14px;color:#166534;border:1px solid #bbf7d0;">
+                    <i class="fa-solid fa-circle-check"></i> OTP sent to <strong id="displayOtpPhone"></strong>
+                    <a href="#" onclick="resetOtpStep();return false;" style="float:right;color:#059669;font-weight:600;">Change</a>
+                </div>
+
+                <label for="loginOtpCode">Enter 6-Digit OTP</label>
+                <input type="text" id="loginOtpCode" placeholder="Enter 6-digit OTP code" maxlength="6" style="text-align:center;font-size:22px;letter-spacing:6px;font-weight:700;" required>
+
+                <button type="button" class="auth-btn" id="btnVerifyLoginOtp" onclick="verifyLoginOTP()">
+                    <i class="fa-solid fa-circle-check"></i> Verify &amp; Sign In
+                </button>
+
+                <p style="margin-top:12px;font-size:13px;color:#777;">
+                    Didn't receive code? <a href="#" onclick="sendLoginOTP();return false;" style="color:var(--orange);font-weight:600;">Resend OTP</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- ======= 2. EMAIL / PHONE + PASSWORD LOGIN ======= -->
+        <form id="passwordSection" onsubmit="return handlePasswordLogin(event)" style="display:none;">
+            <label for="loginIdentifier">Email or 10-Digit Mobile</label>
+            <input type="text" id="loginIdentifier" placeholder="Enter email or mobile" required>
+
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" placeholder="Enter your password" required>
+
+            <div class="forgot-row">
+                <a href="#" onclick="showForgot();return false;">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="auth-btn" id="btnPasswordLogin">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In
+            </button>
+        </form>
+
+        <!-- Divider -->
+        <div class="auth-divider">
+            <span>OR CONTINUE WITH</span>
+        </div>
+
+        <!-- ======= 3. GOOGLE SIGN-IN (GIS) ======= -->
+        <div class="google-auth-wrap">
+            <div id="g_id_onload"></div>
+            <div id="googleBtnContainer">
+                <button type="button" class="google-btn-custom" onclick="triggerGoogleAuth()">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.29 21.39 7.37 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.98 0 12s.46 3.84 1.26 5.42l4.02-3.15z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.37 0 3.29 2.61 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                    </svg>
+                    Continue with Google
+                </button>
+            </div>
+        </div>
+
+        <!-- ======= FORGOT PASSWORD (OTP) ======= -->
+        <div id="forgotBox" style="display:none;margin-top:20px;text-align:left;">
+            <h3 style="font-size:18px;color:var(--darkgreen);margin-bottom:6px;">🔐 Reset Password</h3>
+            <p style="font-size:13px;color:#666;margin-bottom:15px;">Enter your registered mobile or email</p>
+
+            <div id="forgotStep1">
+                <label for="forgotPhone">Mobile or Email</label>
+                <input type="text" id="forgotPhone" placeholder="10-digit mobile or email" required>
+                <button type="button" class="auth-btn" style="background:var(--orange);" onclick="sendForgotOTP()">
+                    <i class="fa-solid fa-paper-plane"></i> Send Reset Code
+                </button>
+            </div>
+
+            <div id="forgotStep2" style="display:none;">
+                <label for="forgotOtpCode">Enter OTP Code</label>
+                <input type="text" id="forgotOtpCode" placeholder="6-digit OTP" maxlength="6" required>
+
+                <label for="forgotNewPass">New Password</label>
+                <input type="password" id="forgotNewPass" placeholder="Enter new password" required>
+
+                <button type="button" class="auth-btn" onclick="verifyForgotOTP()">
+                    <i class="fa-solid fa-shield-halved"></i> Verify &amp; Set New Password
+                </button>
+            </div>
+
+            <p style="margin-top:15px;text-align:center;font-size:14px;">
+                <a href="#" onclick="hideForgot();return false;" style="color:var(--green);font-weight:600;">← Back to Sign In</a>
+            </p>
+        </div>
+
+        <!-- Quick 1-Tap Demo Access -->
+        <div class="demo-accounts" style="margin-top:20px;padding-top:16px;border-top:1px dashed #d1d5db;">
+            <div style="font-size:12px;color:#6b7280;margin-bottom:8px;font-weight:600;">⚡ 1-TAP QUICK DEMO LOGIN</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+                <button type="button" class="chip-btn" onclick="quickDemoLogin('buyer')" style="font-size:13px;padding:6px 12px;">
+                    <i class="fa-solid fa-cart-shopping"></i> Buyer
+                </button>
+                <button type="button" class="chip-btn" onclick="quickDemoLogin('seller')" style="font-size:13px;padding:6px 12px;">
+                    <i class="fa-solid fa-store"></i> Seller
+                </button>
+                <button type="button" class="chip-btn" onclick="quickDemoLogin('delivery_partner')" style="font-size:13px;padding:6px 12px;">
+                    <i class="fa-solid fa-motorcycle"></i> Delivery
+                </button>
+            </div>
+        </div>
+
+        <p class="auth-switch" id="authSwitch">
+            Need a new account? <a href="register.html">Sign Up as Buyer / Seller / Delivery</a>
+        </p>
+    </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+    <div class="footer-logo">
+        <i class="fa-solid fa-store"></i> Market Development Centre
+    </div>
+    <p>Buy &amp; Sell Fresh Products for Everyone</p>
+    <p>© 2026 Market Development Centre. All Rights Reserved.</p>
+    <div class="social">
+        <i class="fa-brands fa-facebook"></i>
+        <i class="fa-brands fa-instagram"></i>
+        <i class="fa-brands fa-twitter"></i>
+        <i class="fa-brands fa-whatsapp"></i>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+// =============================
+// Auth Page Controller (SmartAPI Enabled)
+// =============================
+let selectedRole = 'buyer';
+let activeMethod = 'otp';
+let currentForgotTarget = '';
+
+function selectAuthRole(role, el) {
+    selectedRole = role;
+    document.querySelectorAll('.role-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+}
+
+function switchAuthMethod(method) {
+    activeMethod = method;
+    const tabOtp = document.getElementById('tabOtp');
+    const tabPassword = document.getElementById('tabPassword');
+    const otpSection = document.getElementById('otpSection');
+    const passwordSection = document.getElementById('passwordSection');
+
+    if (method === 'otp') {
+        tabOtp.classList.add('active');
+        tabPassword.classList.remove('active');
+        otpSection.style.display = 'block';
+        passwordSection.style.display = 'none';
+    } else {
+        tabPassword.classList.add('active');
+        tabOtp.classList.remove('active');
+        passwordSection.style.display = 'block';
+        otpSection.style.display = 'none';
+    }
+}
+
+// 1. Mobile OTP Login
+async function sendLoginOTP() {
+    const phone = document.getElementById('otpPhone').value.trim().replace(/\D/g, '');
+    if (phone.length !== 10) {
+        showToast('Please enter a valid 10-digit mobile number');
+        return;
+    }
+
+    const btn = document.getElementById('btnSendLoginOtp');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending OTP...';
+    btn.disabled = true;
+
+    const data = await SmartAPI.sendLoginOTP(phone, selectedRole);
+
+    if (data.success) {
+        document.getElementById('displayOtpPhone').innerText = '+91 ' + phone;
+        document.getElementById('otpStep1').style.display = 'none';
+        document.getElementById('otpStep2').style.display = 'block';
+        showToast(`📱 OTP Code Sent! [Demo Code: ${data.otp || '123456'}]`);
+        document.getElementById('loginOtpCode').value = data.otp || '123456';
+    } else {
+        showToast('❌ ' + (data.message || 'Could not send OTP'));
+    }
+
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Verification OTP';
+    btn.disabled = false;
+}
+
+function resetOtpStep() {
+    document.getElementById('otpStep1').style.display = 'block';
+    document.getElementById('otpStep2').style.display = 'none';
+}
+
+async function verifyLoginOTP() {
+    const phone = document.getElementById('otpPhone').value.trim().replace(/\D/g, '');
+    const otp = document.getElementById('loginOtpCode').value.trim();
+
+    if (!otp || otp.length < 4) {
+        showToast('Please enter the 6-digit OTP code');
+        return;
+    }
+
+    const btn = document.getElementById('btnVerifyLoginOtp');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verifying...';
+    btn.disabled = true;
+
+    const data = await SmartAPI.verifyLoginOTP(phone, otp, selectedRole);
+
+    if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showToast(`🎉 Signed in as ${data.user.name}!`);
+        
+        setTimeout(() => {
+            if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
+                window.location.href = 'profile.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }, 900);
+    } else {
+        showToast('❌ ' + data.message);
+        btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Verify &amp; Sign In';
+        btn.disabled = false;
+    }
+}
+
+// 2. Password Login
+async function handlePasswordLogin(event) {
+    event.preventDefault();
+    const identifier = document.getElementById('loginIdentifier').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    if (!identifier || !password) {
+        showToast('Please enter email/phone and password');
+        return false;
+    }
+
+    const btn = document.getElementById('btnPasswordLogin');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing in...';
+    btn.disabled = true;
+
+    const data = await SmartAPI.login(identifier, password, selectedRole);
+
+    if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showToast(`✅ Welcome back, ${data.user.name}!`);
+        setTimeout(() => {
+            if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
+                window.location.href = 'profile.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }, 900);
+    } else {
+        showToast('❌ ' + data.message);
+        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
+        btn.disabled = false;
+    }
+    return false;
+}
+
+// 3. Google Sign-In Trigger
+async function triggerGoogleAuth() {
+    showToast('🌐 Connecting with Google...');
+    const data = await SmartAPI.googleAuth(selectedRole, 'user.google@marketdc.in', 'Google Verified User');
+    if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showToast(`🎉 Signed in with Google as ${data.user.name}!`);
+        setTimeout(() => {
+            if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
+                window.location.href = 'profile.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }, 900);
+    }
+}
+
+// 4. Quick 1-Tap Demo Access
+async function quickDemoLogin(role) {
+    const demoPhones = {
+        buyer: '9876543210',
+        seller: '9876543211',
+        delivery_partner: '9876543212'
+    };
+    showToast(`⚡ Accessing ${role.replace('_', ' ')} workspace...`);
+    const data = await SmartAPI.verifyLoginOTP(demoPhones[role], '123456', role);
+    if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        showToast(`🎉 Welcome, ${data.user.name}!`);
+        setTimeout(() => {
+            if (data.user.role === 'delivery_partner' || data.user.role === 'seller') {
+                window.location.href = 'profile.html';
+            } else {
+                window.location.href = 'index.html';
+            }
+        }, 800);
+    }
+}
+
+// 5. Forgot Password Handlers
+function showForgot() {
+    document.getElementById('otpSection').style.display = 'none';
+    document.getElementById('passwordSection').style.display = 'none';
+    document.getElementById('forgotBox').style.display = 'block';
+    document.querySelector('.auth-tabs').style.display = 'none';
+    document.querySelector('.google-auth-wrap').style.display = 'none';
+    document.querySelector('.auth-divider').style.display = 'none';
+}
+
+function hideForgot() {
+    document.getElementById('forgotBox').style.display = 'none';
+    document.querySelector('.auth-tabs').style.display = 'flex';
+    document.querySelector('.google-auth-wrap').style.display = 'block';
+    document.querySelector('.auth-divider').style.display = 'flex';
+    switchAuthMethod(activeMethod);
+}
+
+async function sendForgotOTP() {
+    const input = document.getElementById('forgotPhone').value.trim();
+    if (!input) {
+        showToast('Please enter your mobile or email');
+        return;
+    }
+
+    const data = await SmartAPI.sendLoginOTP(input, 'buyer');
+    if (data.success) {
+        currentForgotTarget = input;
+        document.getElementById('forgotStep1').style.display = 'none';
+        document.getElementById('forgotStep2').style.display = 'block';
+        showToast(`📱 OTP Code Sent! (Demo OTP: ${data.otp || '123456'})`);
+        document.getElementById('forgotOtpCode').value = data.otp || '123456';
+    }
+}
+
+async function verifyForgotOTP() {
+    const otp = document.getElementById('forgotOtpCode').value.trim();
+    const newPass = document.getElementById('forgotNewPass').value;
+
+    if (!otp || !newPass) {
+        showToast('Please enter OTP and new password');
+        return;
+    }
+
+    showToast('✅ Password updated successfully! Please sign in.');
+    setTimeout(() => {
+        hideForgot();
+        switchAuthMethod('password');
+    }, 1000);
+}
+</script>
+</body>
+</html>

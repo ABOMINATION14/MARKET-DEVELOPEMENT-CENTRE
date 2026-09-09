@@ -1,0 +1,113 @@
+/* ============================================
+   MARKET DEVELOPMENT CENTRE - Product Styles
+   ============================================ */
+
+.products-page-wrapper {
+    min-height: 80vh;
+    padding-bottom: 60px;
+}
+
+.product-grid-container {
+    padding: 30px 6%;
+}
+
+.product-card-enhanced {
+    background: #fff;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    border: 1px solid #f0f4f0;
+}
+
+.product-card-enhanced:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 28px rgba(46, 125, 50, 0.12);
+    border-color: #d1e7d1;
+}
+
+.product-badge-time {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--darkgreen);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    z-index: 2;
+}
+
+.product-image-wrap {
+    width: 100%;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #f9fbf9;
+}
+
+.product-image-wrap img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.product-card-enhanced:hover .product-image-wrap img {
+    transform: scale(1.06);
+}
+
+.product-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.product-unit-text {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.product-pricing-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin: 8px 0 12px 0;
+}
+
+.product-price-current {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.product-rating-pill {
+    background: #fef9c3;
+    color: #854d0e;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Development Centre | Buy &amp; Sell</title>
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+</head>
+
+<body>
+
+<!-- ================= TOP BAR ================= -->
+<div class="topbar">
+    <i class="fa-solid fa-headset"></i> Need Help? Call Us: +91 98765 43210 &nbsp;|&nbsp; Free Delivery on Orders above ₹500
+</div>
+
+<!-- ================= NAVBAR ================= -->
+<nav>
+    <a href="index.html" class="logo">
+        <i class="fa-solid fa-store"></i>
+        <span>Market Development<br><small>Centre</small></span>
+    </a>
+
+    <ul>
+        <li><a href="index.html" class="active"><i class="fa-solid fa-house"></i> Home</a></li>
+        <li><a href="products.html"><i class="fa-solid fa-basket-shopping"></i> Buy</a></li>
+        <li><a href="sell.html"><i class="fa-solid fa-tag"></i> Sell</a></li>
+        <li><a href="cart.html"><i class="fa-solid fa-cart-shopping"></i> Cart</a></li>
+        <li><a href="profile.html" id="userLink"><i class="fa-solid fa-user"></i> <span id="userName">Account</span></a></li>
+    </ul>
+
+    <div class="icons">
+        <a href="cart.html" onclick="openCartDrawer();return false;" title="View Cart">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cartCount">0</span>
+        </a>
+        <a href="#" onclick="logout();return false;" id="logoutBtn" style="display:none;" title="Sign Out">
+            <i class="fa-solid fa-right-from-bracket"></i>
+        </a>
+        <i class="fa-solid fa-bars menu-btn" onclick="toggleMenu()"></i>
+    </div>
+</nav>
+
+<!-- ================= LOCATION BAR ================= -->
+<div class="location-bar">
+    <i class="fa-solid fa-location-dot"></i>
+    <div class="loc-text" id="locText">
+        Deliver to: <strong>Select location</strong>
+    </div>
+    <button class="detect-btn" onclick="detectLocation()">
+        <i class="fa-solid fa-crosshairs"></i> Detect Location
+    </button>
+</div>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+    <div class="hero-text">
+        <h1 id="heroGreeting">Buy &amp; Sell Fresh Products Easily</h1>
+        <p>
+            <i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Simple &amp; Easy to Use for Everyone <br>
+            <i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Buy Fresh Fruits &amp; Vegetables <br>
+            <i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Choose Your Own Weight (0.5kg to 5kg) <br>
+            <i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Pay with UPI, Netbanking or COD
+        </p>
+        <div class="hero-buttons">
+            <a href="products.html" class="btn-buy">
+                <i class="fa-solid fa-cart-plus"></i> Buy Products
+            </a>
+            <a href="sell.html" class="btn-sell">
+                <i class="fa-solid fa-tag"></i> Sell Products
+            </a>
+        </div>
+    </div>
+    <div class="hero-image">
+        <img src="images/banner.svg" alt="Fresh Market">
+    </div>
+</section>
+
+<!-- ================= PROMO BANNERS SHOWCASE ================= -->
+<section class="promo-showcase">
+    <div class="promo-banner-grid">
+        <div class="promo-banner-card" onclick="window.location.href='products.html'">
+            <img src="images/banner_quick.svg" alt="10-Minute Lightning Delivery">
+        </div>
+        <div class="promo-banner-card" onclick="window.location.href='checkout.html'">
+            <img src="images/banner_discount.svg" alt="20% Discount with code FRESH20">
+        </div>
+        <div class="promo-banner-card" onclick="window.location.href='sell.html'">
+            <img src="images/banner_farmer.svg" alt="Direct from Producers - Zero Brokerage">
+        </div>
+    </div>
+</section>
+
+<!-- ================= SEARCH ================= -->
+<section class="search">
+    <h2>🔍 Search Products</h2>
+    <p>Type the product name or press the mic and speak</p>
+    <div class="search-box">
+        <input type="text" placeholder="Search products..." id="searchBox" onkeyup="searchProduct()">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <button class="voice-btn" onclick="voiceSearch()" title="Search by voice">
+            <i class="fa-solid fa-microphone"></i>
+        </button>
+    </div>
+</section>
+
+<!-- ================= CATEGORIES ================= -->
+<section class="categories">
+    <h2 class="section-title">Browse by Category</h2>
+    <p class="section-sub">Click a category to see products</p>
+    <div class="category-box">
+        <div class="category" onclick="window.location='products.html?cat=vegetable'">
+            <img src="images/vegetables.svg" alt="Vegetables">
+            <h3>Vegetables</h3>
+        </div>
+        <div class="category" onclick="window.location='products.html?cat=fruit'">
+            <img src="images/fruits.svg" alt="Fruits">
+            <h3>Fruits</h3>
+        </div>
+        <div class="category" onclick="window.location='products.html?cat=dairy'">
+            <img src="images/dairy.svg" alt="Dairy">
+            <h3>Dairy</h3>
+        </div>
+        <div class="category" onclick="window.location='products.html?cat=grocery'">
+            <img src="images/snacks.svg" alt="Groceries">
+            <h3>Groceries</h3>
+        </div>
+        <div class="category" onclick="window.location='products.html?cat=drinks'">
+            <img src="images/drinks.svg" alt="Drinks">
+            <h3>Drinks</h3>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FEATURED PRODUCTS ================= -->
+<section class="products">
+    <h2 class="section-title">⭐ Featured Products</h2>
+    <p class="section-sub">Fresh products for you - select your weight!</p>
+    <div class="product-grid" id="featuredGrid">
+        <!-- Products loaded by JS -->
+    </div>
+</section>
+
+<!-- ================= OFFER ================= -->
+<section class="offer">
+    <h2>🎉 Today's Special Offer</h2>
+    <h1>20% OFF</h1>
+    <p>On all Fresh Vegetables - Limited Time!</p>
+    <button onclick="offer()">Grab Offer</button>
+</section>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section class="how">
+    <h2 class="section-title">How It Works</h2>
+    <p class="section-sub">Simple steps for everyone</p>
+    <div class="how-steps">
+        <div class="step">
+            <span class="num">1</span>
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <h3>Search</h3>
+            <p>Find the product you want using search or voice</p>
+        </div>
+        <div class="step">
+            <span class="num">2</span>
+            <i class="fa-solid fa-cart-plus"></i>
+            <h3>Choose Weight &amp; Add</h3>
+            <p>Select your weight and press Add to Cart</p>
+        </div>
+        <div class="step">
+            <span class="num">3</span>
+            <i class="fa-solid fa-truck"></i>
+            <h3>Get Delivery</h3>
+            <p>We deliver fresh to your door in 30 min</p>
+        </div>
+    </div>
+</section>
+
+<!-- ================= SELL SECTION ================= -->
+<section class="sell-section">
+    <h2 class="section-title">Want to Sell?</h2>
+    <p class="section-sub">Farmers and sellers can earn more with us</p>
+    <div class="sell-box">
+        <div class="sell-card">
+            <i class="fa-solid fa-tag"></i>
+            <h3>List Your Product</h3>
+            <p>Add your fruits, vegetables or goods for free</p>
+            <button class="sell-btn" onclick="window.location='sell.html'">Start Selling</button>
+        </div>
+        <div class="sell-card">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+            <h3>Get Fair Price</h3>
+            <p>We help you get the best price for your produce</p>
+            <button class="sell-btn" onclick="window.location='sell.html'">Learn More</button>
+        </div>
+        <div class="sell-card">
+            <i class="fa-solid fa-users"></i>
+            <h3>Reach More Customers</h3>
+            <p>Sell directly to thousands of customers</p>
+            <button class="sell-btn" onclick="window.location='sell.html'">Join Now</button>
+        </div>
+    </div>
+</section>
+
+<!-- ================= WHY CHOOSE US ================= -->
+<section class="why">
+    <h2 class="section-title">Why Choose Market Development Centre?</h2>
+    <p class="section-sub">Your trusted marketplace</p>
+    <div class="why-box">
+        <div>
+            <i class="fa-solid fa-face-smile"></i>
+            <h3>Easy to Use</h3>
+            <p>Simple buttons and big text for everyone</p>
+        </div>
+        <div>
+            <i class="fa-solid fa-truck-fast"></i>
+            <h3>Fast Delivery</h3>
+            <p>Delivered within 30 minutes</p>
+        </div>
+        <div>
+            <i class="fa-solid fa-leaf"></i>
+            <h3>Fresh Products</h3>
+            <p>Directly from farms</p>
+        </div>
+        <div>
+            <i class="fa-solid fa-wallet"></i>
+            <h3>Flexible Weights</h3>
+            <p>Buy exactly what you need</p>
+        </div>
+        <div>
+            <i class="fa-solid fa-shield-halved"></i>
+            <h3>Secure Payments</h3>
+            <p>UPI, Netbanking &amp; COD</p>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+    <div class="footer-logo">
+        <i class="fa-solid fa-store"></i> Market Development Centre
+    </div>
+    <p>Buy &amp; Sell Fresh Products for Everyone</p>
+    <p>© 2026 Market Development Centre. All Rights Reserved.</p>
+    <div class="social">
+        <i class="fa-brands fa-facebook"></i>
+        <i class="fa-brands fa-instagram"></i>
+        <i class="fa-brands fa-twitter"></i>
+        <i class="fa-brands fa-whatsapp"></i>
+    </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+// Show user greeting if logged in
+document.addEventListener("DOMContentLoaded", () => {
+    let user = getCurrentUser();
+    if (user && isLoggedIn()) {
+        const greetingEl = document.getElementById('heroGreeting');
+        if (greetingEl) {
+            greetingEl.innerText = 'Welcome back, ' + (user.name ? user.name.split(' ')[0] : 'Friend') + '! 👋';
+        }
+    }
+});
+</script>
+</body>
+</html>
