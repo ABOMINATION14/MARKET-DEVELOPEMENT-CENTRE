@@ -1,37 +1,31 @@
 pipeline {
-
     agent any
 
     environment {
-        DOCKER_USERNAME = "YOUR_DOCKERHUB_USERNAME"
-        IMAGE_NAME = "market-development-centre"
-        IMAGE_TAG = "latest"
+        DOCKER_IMAGE = "rdk1612/market-development-centre:latest"
     }
 
     stages {
 
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/ABOMINATION14/MARKET-DEVELOPEMENT-CENTRE.git'
-            }
-        }
-
         stage('Verify Node.js') {
             steps {
+                echo 'Checking Node.js...'
                 bat 'node --version'
             }
         }
 
         stage('Verify Docker') {
             steps {
+                echo 'Checking Docker...'
                 bat 'docker --version'
+                bat 'docker info'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t %DOCKER_USERNAME%/%IMAGE_NAME%:%IMAGE_TAG% .'
+                echo "Building Docker image: ${DOCKER_IMAGE}"
+                bat "docker build -t ${DOCKER_IMAGE} ."
             }
         }
 
@@ -40,18 +34,19 @@ pipeline {
                 withCredentials([
                     usernamePassword(
                         credentialsId: 'dockerhub-cred',
-                        usernameVariable: 'DOCKER_USER',
-                        passwordVariable: 'DOCKER_PASS'
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
                     )
                 ]) {
-                    bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
+                    bat 'echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin'
                 }
             }
         }
 
         stage('Push Image') {
             steps {
-                bat 'docker push %DOCKER_USERNAME%/%IMAGE_NAME%:%IMAGE_TAG%'
+                echo "Pushing image to Docker Hub..."
+                bat "docker push ${DOCKER_IMAGE}"
             }
         }
     }
@@ -59,11 +54,14 @@ pipeline {
     post {
         success {
             echo 'CI/CD Pipeline completed successfully!'
-            echo 'Docker image pushed to DockerHub.'
         }
 
         failure {
             echo 'CI/CD Pipeline failed.'
+        }
+
+        always {
+            bat 'docker logout || exit 0'
         }
     }
 }
