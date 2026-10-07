@@ -1,67 +1,58 @@
 pipeline {
-    agent any
 
-    environment {
-        DOCKER_IMAGE = "rdk1612/market-development-centre:latest"
-    }
+    agent any
 
     stages {
 
-        stage('Verify Node.js') {
+        stage('Checkout') {
             steps {
-                echo 'Checking Node.js...'
-                bat 'node --version'
+                echo 'Cloning Market Development Centre...'
+                git branch: 'main',
+                    url: 'https://github.com/ABOMINATION14/MARKET-DEVELOPEMENT-CENTRE.git'
             }
         }
 
-        stage('Verify Docker') {
+        stage('Maven Build') {
             steps {
-                echo 'Checking Docker...'
-                bat 'docker --version'
-                bat 'docker info'
+                echo 'Building Java programs using Maven...'
+                bat 'mvn clean compile'
             }
         }
 
-        stage('Build Docker Image') {
+        stage('Docker Build') {
             steps {
-                echo "Building Docker image: ${DOCKER_IMAGE}"
-                bat "docker build -t ${DOCKER_IMAGE} ."
+                echo 'Building Docker image...'
+                bat 'docker build -t market-development-centre:latest .'
             }
         }
 
-        stage('Login to DockerHub') {
+        stage('Docker Run Test') {
             steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub-cred',
-                        usernameVariable: 'DOCKER_USERNAME',
-                        passwordVariable: 'DOCKER_PASSWORD'
-                    )
-                ]) {
-                    bat 'echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin'
-                }
-            }
-        }
+                echo 'Testing Docker container...'
 
-        stage('Push Image') {
-            steps {
-                echo "Pushing image to Docker Hub..."
-                bat "docker push ${DOCKER_IMAGE}"
+                bat '''
+                docker rm -f market-development-centre-test 2>NUL || exit 0
+                docker run -d --name market-development-centre-test -p 8080:8080 market-development-centre:latest
+                '''
+
+                bat 'timeout /t 10'
+
+                bat 'docker ps'
+
+                bat '''
+                docker rm -f market-development-centre-test
+                '''
             }
         }
     }
 
     post {
         success {
-            echo 'CI/CD Pipeline completed successfully!'
+            echo 'BUILD SUCCESSFUL - Maven and Docker completed successfully.'
         }
 
         failure {
-            echo 'CI/CD Pipeline failed.'
-        }
-
-        always {
-            bat 'docker logout || exit 0'
+            echo 'BUILD FAILED - Check the Jenkins console output.'
         }
     }
 }
